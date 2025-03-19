@@ -26,17 +26,18 @@ import { Edit, Delete } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/system';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  '&.MuiTableCell-head': {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-  },
-  '&.MuiTableCell-body': {
-    color: theme.palette.text.primary,
-  },
-}));
 
-const SingleMenuView: React.FC = () => {
+// const StyledTableCell = styled(TableCell)(({ theme }) => ({
+//   '&.MuiTableCell-head': {
+//     backgroundColor: theme.palette.primary.main,
+//     color: theme.palette.common.white,
+//   },
+//   '&.MuiTableCell-body': {
+//     color: theme.palette.text.primary,
+//   },
+// }));
+
+const Events: React.FC = () => {
   const [events, setEvents] = useState<any[]>([
     // Dummy data
     {
@@ -114,29 +115,28 @@ const SingleMenuView: React.FC = () => {
       >
         Add New Event
       </Button>
-
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <StyledTableCell>Title</StyledTableCell>
-              <StyledTableCell>Description</StyledTableCell>
-              <StyledTableCell>Location</StyledTableCell>
-              <StyledTableCell>Start Date</StyledTableCell>
-              <StyledTableCell>End Date</StyledTableCell>
-              <StyledTableCell>Status</StyledTableCell>
-              <StyledTableCell>Actions</StyledTableCell>
+              <TableCell>Title</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Location</TableCell>
+              <TableCell>Start Date</TableCell>
+              <TableCell>End Date</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {events.map((event) => (
               <TableRow key={event._id}>
-                <TableCell>{event.title}</TableCell>
-                <TableCell>{event.description}</TableCell>
-                <TableCell>{event.location}</TableCell>
-                <TableCell>{event.startDate}</TableCell>
-                <TableCell>{event.endDate}</TableCell>
-                <TableCell>{event.status}</TableCell>
+                <TableCell>{event.title || 'No Title'}</TableCell>
+                <TableCell>{event.description || 'No Description'}</TableCell>
+                <TableCell>{event.location || 'No Location'}</TableCell>
+                <TableCell>{event.startDate || 'Unknown Start Date'}</TableCell>
+                <TableCell>{event.endDate || 'Unknown End Date'}</TableCell>
+                <TableCell>{event.status || 'Unknown Status'}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
@@ -284,4 +284,4 @@ const SingleMenuView: React.FC = () => {
   );
 };
 
-export default SingleMenuView;
+export default Events;
