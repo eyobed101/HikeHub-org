@@ -1,11 +1,26 @@
-/* eslint-disable import/default */
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import "swiper/swiper-bundle.css";
+import "simplebar-react/dist/simplebar.min.css";
+import "flatpickr/dist/flatpickr.css";
+import App from "./App.tsx";
+import { AppWrapper } from "./components/common/PageMeta.tsx";
+import { ThemeProvider } from "./context/ThemeContext.tsx";
+import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter as Router } from "react-router-dom"; // Correct import
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>
-)
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <ThemeProvider>
+      <AppWrapper>
+        <AuthProvider>
+          <Router> {/* Ensure Router wraps everything */}
+            <App />
+          </Router>
+        </AuthProvider>
+      </AppWrapper>
+    </ThemeProvider>
+  </StrictMode>
+);

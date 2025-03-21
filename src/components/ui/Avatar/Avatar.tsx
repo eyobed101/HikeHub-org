@@ -1,128 +1,55 @@
-import { useState, useEffect, useRef, forwardRef } from 'react'
-import useMergedRef from '../hooks/useMergeRef'
-import classNames from 'classnames'
-import type { CommonProps, TypeAttributes } from '../@types/common'
-import type { ReactNode } from 'react'
-
-export interface AvatarProps extends CommonProps {
-    alt?: string
-    icon?: ReactNode
-    onClick?: () => void
-    size?: 'lg' | 'md' | 'sm' | number
-    shape?: Exclude<TypeAttributes.Shape, 'none'> | 'square'
-    src?: string
-    srcSet?: string
+interface AvatarProps {
+  src: string; // URL of the avatar image
+  alt?: string; // Alt text for the avatar
+  size?: "xsmall" | "small" | "medium" | "large" | "xlarge" | "xxlarge"; // Avatar size
+  status?: "online" | "offline" | "busy" | "none"; // Status indicator
 }
 
-const Avatar = forwardRef<HTMLSpanElement, AvatarProps>((props, ref) => {
-    const {
-        alt,
-        className,
-        icon,
-        shape = 'rounded',
-        size = 'md',
-        src,
-        srcSet,
-        ...rest
-    } = props
+const sizeClasses = {
+  xsmall: "h-6 w-6 max-w-6",
+  small: "h-8 w-8 max-w-8",
+  medium: "h-10 w-10 max-w-10",
+  large: "h-12 w-12 max-w-12",
+  xlarge: "h-14 w-14 max-w-14",
+  xxlarge: "h-16 w-16 max-w-16",
+};
 
-    let { children } = props
-    const [scale, setScale] = useState(1)
+const statusSizeClasses = {
+  xsmall: "h-1.5 w-1.5 max-w-1.5",
+  small: "h-2 w-2 max-w-2",
+  medium: "h-2.5 w-2.5 max-w-2.5",
+  large: "h-3 w-3 max-w-3",
+  xlarge: "h-3.5 w-3.5 max-w-3.5",
+  xxlarge: "h-4 w-4 max-w-4",
+};
 
-    const avatarChildren = useRef<HTMLSpanElement>(null)
-    const avatarNode = useRef<HTMLSpanElement>(null)
+const statusColorClasses = {
+  online: "bg-success-500",
+  offline: "bg-error-400",
+  busy: "bg-warning-500",
+};
 
-    const avatarMergeRef = useMergedRef(ref, avatarNode)
+const Avatar: React.FC<AvatarProps> = ({
+  src,
+  alt = "User Avatar",
+  size = "medium",
+  status = "none",
+}) => {
+  return (
+    <div className={`relative  rounded-full ${sizeClasses[size]}`}>
+      {/* Avatar Image */}
+      <img src={src} alt={alt} className="object-cover rounded-full" />
 
-    const innerScale = () => {
-        if (!avatarChildren.current || !avatarNode.current) {
-            return
-        }
-        const avatarChildrenWidth = avatarChildren.current.offsetWidth
-        const avatarNodeWidth = avatarNode.current.offsetWidth
-        if (avatarChildrenWidth === 0 || avatarNodeWidth === 0) {
-            return
-        }
-        setScale(
-            avatarNodeWidth - 8 < avatarChildrenWidth
-                ? (avatarNodeWidth - 8) / avatarChildrenWidth
-                : 1
-        )
-    }
-
-    useEffect(() => {
-        innerScale()
-    }, [scale, children])
-
-    const sizeStyle =
-        typeof size === 'number'
-            ? {
-                  width: size,
-                  height: size,
-                  minWidth: size,
-                  lineHeight: `${size}px`,
-                  fontSize: icon ? size / 2 : 12,
-              }
-            : {}
-
-    const classes = classNames(
-        'avatar',
-        `avatar-${shape}`,
-        typeof size === 'string' ? `avatar-${size}` : '',
-        className
-    )
-
-    if (src) {
-        children = (
-            <img
-                className={`avatar-img avatar-${shape}`}
-                src={src}
-                srcSet={srcSet}
-                alt={alt}
-                loading="lazy"
-            />
-        )
-    } else if (icon) {
-        children = (
-            <span className={classNames('avatar-icon', `avatar-icon-${size}`)}>
-                {icon}
-            </span>
-        )
-    } else {
-        const childrenSizeStyle =
-            typeof size === 'number' ? { lineHeight: `${size}px` } : {}
-        const stringCentralized = {
-            transform: `translateX(-50%) scale(${scale})`,
-        }
-        children = (
-            <span
-                ref={avatarChildren}
-                className={`avatar-string ${
-                    typeof size === 'number' ? '' : `avatar-inner-${size}`
-                }`}
-                style={{
-                    ...childrenSizeStyle,
-                    ...stringCentralized,
-                    ...(typeof size === 'number' ? { height: size } : {}),
-                }}
-            >
-                {children}
-            </span>
-        )
-    }
-
-    return (
+      {/* Status Indicator */}
+      {status !== "none" && (
         <span
-            ref={avatarMergeRef}
-            className={classes}
-            style={{ ...sizeStyle, ...rest.style }}
-            {...rest}
-        >
-            {children}
-        </span>
-    )
-})
+          className={`absolute bottom-0 right-0 rounded-full border-[1.5px] border-white dark:border-gray-900 ${
+            statusSizeClasses[size]
+          } ${statusColorClasses[status] || ""}`}
+        ></span>
+      )}
+    </div>
+  );
+};
 
-Avatar.displayName = 'Avatar'
-
-export default Avatar
+export default Avatar;
