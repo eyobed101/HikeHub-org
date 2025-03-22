@@ -1,20 +1,20 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext"; // Your context to check if the user is authenticated
 
-interface AuthGuardProps {
-  children: React.ReactNode;
-}
+const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth(); // Assuming isAuthenticated is your current authentication status
+  const navigate = useNavigate();
 
-const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  useEffect(() => {
+    // If not authenticated, redirect to signin
+    if (!isAuthenticated) {
+      navigate("/signin");
+    }
+  }, [isAuthenticated, navigate]); // Rerun the effect if isAuthenticated changes
 
-  if (!isAuthenticated) {
-    console.log("User is not authenticated. Redirecting to /signin.");
-    return <Navigate to="/signin" replace />;
-  }
-
-  return <>{children}</>;
+  // Only render children if the user is authenticated
+  return isAuthenticated ? <>{children}</> : null;
 };
 
 export default AuthGuard;

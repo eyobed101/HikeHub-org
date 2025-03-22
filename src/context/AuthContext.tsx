@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { performLogout } from '../utils/logout';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -13,30 +15,34 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(false); // Added loading state
+  interface RootState {
+    auth: {
+      isAuthenticated: boolean;
+    };
+  }
 
-  // Log on provider initialization
-  useEffect(() => {
-    console.log('AuthProvider initialized. isAuthenticated:', isAuthenticated);
-  }, []);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated); // Adjust the selector based on your auth state
+
+
+  
 
   const login = () => {
-    console.log('Login called');
-    setIsAuthenticated(true);
+    // Perform login logic
   };
 
   const logout = () => {
-    console.log('Logout called');
-    setIsAuthenticated(false);
+    performLogout();
   };
 
   console.log('AuthProvider rendering with isAuthenticated:', isAuthenticated);
+
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
+      {!loading && children} {/* Prevents UI flickering */}
     </AuthContext.Provider>
   );
-  
 };
 
 export const useAuth = (): AuthContextType => {

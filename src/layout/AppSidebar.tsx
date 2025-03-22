@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router";
 import {
   BoxCubeIcon,
   CalenderIcon,
+  
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
@@ -29,12 +30,17 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    subItems: [{ name: "Statistic", path: "/", pro: false }],
   },
+  // {
+  //   icon: <CalenderIcon />,
+  //   name: "Calendar",
+  //   path: "/calendar",
+  // },
   {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
+    icon: <ListIcon />,
+    name: "Events",
+    path: "/events",
   },
   {
     icon: <UserCircleIcon />,

@@ -18,10 +18,13 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
+import EventsTable from "./pages/Events/EventsTable";
 import AuthGuard from "./auth/AuthGuard";
 
 const protectedRoutes = [
   { path: "/", element: <Home /> },
+  { path: "/home", element: <Home /> },
+  { path: "/events", element: <EventsTable /> },
   { path: "/profile", element: <UserProfiles /> },
   { path: "/calendar", element: <Calendar /> },
   { path: "/blank", element: <Blank /> },
@@ -42,7 +45,10 @@ export default function App() {
     <Router>
       <ScrollToTop />
       <Routes>
-        <Route element={<AppLayout />}>
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+
+        <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
           {protectedRoutes.map(({ path, element }) => (
             <Route
               key={path}
@@ -52,11 +58,6 @@ export default function App() {
           ))}
         </Route>
 
-        {/* Auth Layout */}
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-
-        {/* Fallback Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

@@ -9,9 +9,14 @@ import { AppWrapper } from "./components/common/PageMeta.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter as Router } from "react-router-dom"; // Correct import
+import store, { persistor } from './store/store';
+import { Provider } from 'react-redux';
+
 
 
 createRoot(document.getElementById("root")!).render(
+  <Provider store={store}>
+
   <StrictMode>
     <ThemeProvider>
       <AppWrapper>
@@ -23,4 +28,5 @@ createRoot(document.getElementById("root")!).render(
       </AppWrapper>
     </ThemeProvider>
   </StrictMode>
+  </Provider>
 );
