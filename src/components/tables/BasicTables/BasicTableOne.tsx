@@ -37,7 +37,8 @@ interface Event {
 export default function EventTable({ tableData }: { tableData: Event[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]); // State for categories
-
+  const [viewEvent, setViewEvent] = useState<Event | null>(null); // State to hold the event to view
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false); // State to control the view modal
   const [formData, setFormData] = useState({
     _id: "",
     title: "",
@@ -118,11 +119,16 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
     setFormData((prev) => ({ ...prev, [name]: value[0] })); // Use the first selected date
   };
 
+  const handleViewEvent = (event: Event) => {
+    setViewEvent(event); // Set the selected event
+    setIsViewModalOpen(true); // Open the view modal
+  };
+
   const handleAddNewEvent = () => {
-setFormData({
+    setFormData({
       _id: "",  // Clear the form data
       title: "",
-      description: "",  
+      description: "",
       location: "",
       distance: "",
       itinerary: [],
@@ -135,11 +141,11 @@ setFormData({
       images: [],
       type: "",
       level: "",
-      categories: "", 
+      categories: "",
       meetingPlace: "",
       meetingTime: "",
       announcement: "",
-    }); 
+    });
     setIsModalOpen(true);
   };
 
@@ -149,6 +155,19 @@ setFormData({
 
   const handleSave = async () => {
     console.log("Form Data:", formData);
+
+    const formDataToSend = new FormData();
+
+    Object.keys(formData).forEach((key) => {
+      if (key === "images") {
+        // Append files for the "images" field
+        formData.images.forEach((image) => {
+          formDataToSend.append("images", image.file); // Append the actual file
+        });
+      } else {
+        formDataToSend.append(key, formData[key]);
+      }
+    });
 
     try {
       if (formData._id) {
@@ -169,7 +188,13 @@ setFormData({
         }
       } else {
         // Otherwise, create a new event
-        const response = await axiosInstance.post("event/create", formData);
+        const response = await axiosInstance.post("event/create", formDataToSend,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
         if (response.status === 201) {
           console.log("Event created successfully:", response.data);
@@ -267,7 +292,8 @@ setFormData({
                   <TableCell className="px-5 py-4">${event.price.toFixed(2)}</TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex gap-2">
-                      <button className="text-blue-500 hover:underline">View</button>
+                      <button className="text-blue-500 hover:underline" onClick={() => handleViewEvent(event)} // Pass the event to the view handler
+                      >View</button>
                       <button className="text-yellow-500 hover:underline" onClick={() => handleEditEvent(event)} // Pass the event to the edit handler
                       >Edit</button>
                       {/* <button className="text-red-500 hover:underline">Delete</button> */}
@@ -539,6 +565,110 @@ setFormData({
               </Button>
             </div>
           </form>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} className="max-w-[700px] m-4">
+        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">Event Details</h4>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+              View the details of the selected event.
+            </p>
+          </div>
+          {viewEvent && (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+              <div>
+                <Label>Title</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.title}</p>
+              </div>
+              <div>
+                <Label>Description</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.description}</p>
+              </div>
+              <div>
+                <Label>Location</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.location}</p>
+              </div>
+              <div>
+                <Label>Distance</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.distance}</p>
+              </div>
+              <div>
+                <Label>Price</Label>
+                <p className="text-gray-800 dark:text-white/90">${viewEvent.price.toFixed(2)}</p>
+              </div>
+              <div>
+                <Label>Max Participants</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.maxParticipants}</p>
+              </div>
+              <div>
+                <Label>Start Date</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.startDate}</p>
+              </div>
+              <div>
+                <Label>End Date</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.endDate}</p>
+              </div>
+              <div>
+                <Label>Transportation</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.transportation}</p>
+              </div>
+              <div>
+                <Label>Weather Condition</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.weatherCondition}</p>
+              </div>
+              <div>
+                <Label>Type</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.type}</p>
+              </div>
+              <div>
+                <Label>Difficulty Level</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.level}</p>
+              </div>
+              <div>
+                <Label>Category</Label>
+                <p className="text-gray-800 dark:text-white/90">
+                  {typeof viewEvent.categories === "object" && viewEvent.categories.name
+                    ? viewEvent.categories.name // Render the category name if it's an object
+                    : viewEvent.categories} {/* Render as-is if it's already a string */}
+                </p>
+              </div>
+              <div>
+                <Label>Meeting Place</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.meetingPlace}</p>
+              </div>
+              <div>
+                <Label>Meeting Time</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.meetingTime}</p>
+              </div>
+              <div>
+                <Label>Announcement</Label>
+                <p className="text-gray-800 dark:text-white/90">{viewEvent.announcement}</p>
+              </div>
+              <div className="col-span-2">
+                <Label>Images</Label>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {viewEvent.multimedia.map((image, index) => (
+                    <div key={index} className="relative">
+                      <div className="overflow-hidden">
+                        <img
+                          src={image} // Assuming `image` is a URL
+                          alt={`Event Image ${index + 1}`}
+                          className="w-full border border-gray-200 rounded-xl dark:border-gray-800"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+            <Button size="sm" variant="outline" onClick={() => setIsViewModalOpen(false)}>
+              Close
+            </Button>
+          </div>
         </div>
       </Modal>
     </>

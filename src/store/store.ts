@@ -22,6 +22,7 @@ const persistConfig = {
 // Apply persistReducer to the combined reducer
 const persistedReducer = persistReducer(persistConfig, reducer);
 
+// Configure the store
 const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
@@ -35,6 +36,11 @@ const store = configureStore({
 // Create a persistor
 export const persistor = persistStore(store);
 
+// Setup listeners for RTK Query
 setupListeners(store.dispatch);
+
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 
 export default store;
