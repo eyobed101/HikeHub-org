@@ -39,6 +39,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]); // State for categories
 
   const [formData, setFormData] = useState({
+    _id: "",
     title: "",
     description: "",
     location: "",
@@ -79,11 +80,19 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
 
   const onDrop = (acceptedFiles: File[]) => {
     console.log("Files dropped:", acceptedFiles);
+
     if (acceptedFiles.length > 0) {
-      const files = acceptedFiles.map((file) => URL.createObjectURL(file));
-      setFormData((prev) => ({ ...prev, images: files }));
+      // Create object URLs for preview and append files to the formData state
+      const files = acceptedFiles.map((file) => ({
+        path: URL.createObjectURL(file), // For preview
+        file, // Keep the actual file for upload
+      }));
+
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...files],
+      }));
     }
-    // Handle file uploads here
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -110,6 +119,27 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
   };
 
   const handleAddNewEvent = () => {
+setFormData({
+      _id: "",  // Clear the form data
+      title: "",
+      description: "",  
+      location: "",
+      distance: "",
+      itinerary: [],
+      price: 0,
+      maxParticipants: 0,
+      startDate: "",
+      endDate: "",
+      transportation: "",
+      weatherCondition: "",
+      images: [],
+      type: "",
+      level: "",
+      categories: "", 
+      meetingPlace: "",
+      meetingTime: "",
+      announcement: "",
+    }); 
     setIsModalOpen(true);
   };
 
@@ -129,7 +159,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
 
           },
         });
-  
+
         if (response.status === 200) {
           console.log("Event updated successfully:", response.data);
           alert("Event updated successfully!");
@@ -140,7 +170,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
       } else {
         // Otherwise, create a new event
         const response = await axiosInstance.post("event/create", formData);
-  
+
         if (response.status === 201) {
           console.log("Event created successfully:", response.data);
           alert("Event created successfully!");
