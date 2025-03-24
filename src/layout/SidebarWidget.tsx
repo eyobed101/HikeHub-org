@@ -11,7 +11,7 @@ export default function SidebarWidget() {
         Plan unforgettable hiking experiences, connect with hikers, and manage your events efficiently.
       </p>
       <a
-        href="/organizer-dashboard"
+        href="/events"
         className="flex items-center justify-center p-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
       >
         Manage Events

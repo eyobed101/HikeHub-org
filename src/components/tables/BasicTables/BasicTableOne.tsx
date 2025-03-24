@@ -19,6 +19,13 @@ import TextArea from "../../form/input/TextArea";
 import { useDropzone } from "react-dropzone";
 import ComponentCard from "../../common/ComponentCard";
 import axiosInstance from "../../../utils/axiosInstance";
+import { useTheme } from "../../../context/ThemeContext";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules"; // Import the required modules
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 
 interface Event {
   _id: string;
@@ -39,6 +46,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]); // State for categories
   const [viewEvent, setViewEvent] = useState<Event | null>(null); // State to hold the event to view
   const [isViewModalOpen, setIsViewModalOpen] = useState(false); // State to control the view modal
+  const { theme } = useTheme(); // Get the current theme (e.g., "light" or "dark")
   const [formData, setFormData] = useState({
     _id: "",
     title: "",
@@ -263,8 +271,14 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {tableData.map((event) => (
                 <TableRow key={event._id}>
-                  <TableCell className="px-5 py-4">{event.title}</TableCell>
-                  <TableCell className="px-5 py-4">
+                  <TableCell className={`px-5 py-4 ${theme === "dark"
+                    ? "text-gray-400"
+                    : "text-gray-800"
+                    }`}>{event.title}</TableCell>
+                  <TableCell className={`px-5 py-4 ${theme === "dark"
+                    ? "text-blue-400 hover:underline"
+                    : "text-blue-500 hover:underline"
+                    }`}>
                     <a
                       href={event.location}
                       target="_blank"
@@ -274,7 +288,10 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
                       View Map
                     </a>
                   </TableCell>
-                  <TableCell className="px-5 py-4">{event.distance}</TableCell>
+                  <TableCell className={`px-5 py-4 ${theme === "dark"
+                    ? "text-gray-400"
+                    : "text-gray-800"
+                    }`}>{event.distance}</TableCell>
                   <TableCell className="px-5 py-4">
                     <Badge
                       size="sm"
@@ -289,7 +306,10 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
                       {event.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="px-5 py-4">${event.price.toFixed(2)}</TableCell>
+                  <TableCell className={`px-5 py-4 ${theme === "dark"
+                    ? "text-gray-400"
+                    : "text-gray-800"
+                    }`}>${event.price.toFixed(2)}</TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex gap-2">
                       <button className="text-blue-500 hover:underline" onClick={() => handleViewEvent(event)} // Pass the event to the view handler
@@ -568,102 +588,117 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
         </div>
       </Modal>
 
-      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} className="max-w-[700px] m-4">
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        className="max-w-[700px] m-4"
+      >
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-          <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">Event Details</h4>
+        <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Event Details
+            </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
               View the details of the selected event.
             </p>
           </div>
-          {viewEvent && (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-              <div>
-                <Label>Title</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.title}</p>
-              </div>
-              <div>
-                <Label>Description</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.description}</p>
-              </div>
-              <div>
-                <Label>Location</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.location}</p>
-              </div>
-              <div>
-                <Label>Distance</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.distance}</p>
-              </div>
-              <div>
-                <Label>Price</Label>
-                <p className="text-gray-800 dark:text-white/90">${viewEvent.price.toFixed(2)}</p>
-              </div>
-              <div>
-                <Label>Max Participants</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.maxParticipants}</p>
-              </div>
-              <div>
-                <Label>Start Date</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.startDate}</p>
-              </div>
-              <div>
-                <Label>End Date</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.endDate}</p>
-              </div>
-              <div>
-                <Label>Transportation</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.transportation}</p>
-              </div>
-              <div>
-                <Label>Weather Condition</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.weatherCondition}</p>
-              </div>
-              <div>
-                <Label>Type</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.type}</p>
-              </div>
-              <div>
-                <Label>Difficulty Level</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.level}</p>
-              </div>
-              <div>
-                <Label>Category</Label>
-                <p className="text-gray-800 dark:text-white/90">
-                  {typeof viewEvent.categories === "object" && viewEvent.categories.name
-                    ? viewEvent.categories.name // Render the category name if it's an object
-                    : viewEvent.categories} {/* Render as-is if it's already a string */}
-                </p>
-              </div>
-              <div>
-                <Label>Meeting Place</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.meetingPlace}</p>
-              </div>
-              <div>
-                <Label>Meeting Time</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.meetingTime}</p>
-              </div>
-              <div>
-                <Label>Announcement</Label>
-                <p className="text-gray-800 dark:text-white/90">{viewEvent.announcement}</p>
-              </div>
-              <div className="col-span-2">
-                <Label>Images</Label>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="no-scrollbar custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
+          {/* Carousel for Images */}
+            {viewEvent?.multimedia && viewEvent.multimedia.length > 0 && (
+              <div className="mb-6">
+                <Swiper
+                  modules={[Navigation, Pagination]}
+                  navigation
+                  pagination={{ clickable: true }}
+                  className="rounded-xl overflow-hidden"
+                >
                   {viewEvent.multimedia.map((image, index) => (
-                    <div key={index} className="relative">
-                      <div className="overflow-hidden">
-                        <img
-                          src={image} // Assuming `image` is a URL
-                          alt={`Event Image ${index + 1}`}
-                          className="w-full border border-gray-200 rounded-xl dark:border-gray-800"
-                        />
-                      </div>
-                    </div>
+                    <SwiperSlide key={index}>
+                      <img
+                        src={image}
+                        alt={`Event Image ${index + 1}`}
+                        className="w-full h-64 object-cover border border-gray-200 rounded-xl dark:border-gray-800"
+                      />
+                    </SwiperSlide>
                   ))}
+                </Swiper>
+              </div>
+            )}
+
+            {/* Event Details in Boxes */}
+            {viewEvent && (
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Title</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.title}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Description</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.description}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Location</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.location}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Distance</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.distance}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Price</Label>
+                  <p className="text-gray-800 dark:text-white/90">${viewEvent.price.toFixed(2)}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Max Participants</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.maxParticipants}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Start Date</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.startDate}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>End Date</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.endDate}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Transportation</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.transportation}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Weather Condition</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.weatherCondition}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Type</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.type}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Difficulty Level</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.level}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Category</Label>
+                  <p className="text-gray-800 dark:text-white/90">
+                    {typeof viewEvent.categories === "object" && viewEvent.categories.name
+                      ? viewEvent.categories.name
+                      : viewEvent.categories}
+                  </p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Meeting Place</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.meetingPlace}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Meeting Time</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.meetingTime}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Announcement</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.announcement}</p>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
           <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
             <Button size="sm" variant="outline" onClick={() => setIsViewModalOpen(false)}>
               Close

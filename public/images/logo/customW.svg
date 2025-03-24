@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="154" height="32" viewBox="0 0 154 32">
+  <g>
+    <!-- Hiker Icon -->
+    <g transform="translate(0, 0)">
+      <circle cx="8" cy="6" r="4" fill="#4CAF50"/>
+      <path d="M6 10h4v8h-4z" fill="#BDBDBD"/>
+      <path d="M6 18h8v8h-8z" fill="#2196F3"/>
+      <path d="M4 8l8 4-2 2-8-4z" fill="#4CAF50"/>
+    </g>
+
+    <!-- Text for white theme -->
+    <text x="40" y="20" font-family="Arial" font-size="16" fill="#FFFFFF">HikeHub</text>
+  </g>
+</svg>
