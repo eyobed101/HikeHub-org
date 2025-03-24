@@ -6,8 +6,12 @@ import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/Button/Button";
 import { useDispatch } from "react-redux";
 import { login } from "../../store/authSlice";
-import axiosInstance from "../../utils/axiosInstance"; // Import axios instance
+// import axiosInstance from "../../utils/axiosInstance"; // Import axios instance
 import { Link, useNavigate } from "react-router";
+import axios from "axios";
+
+const BASE_URL = 'https://hikeapi.issipeteta.net/api/v1.0/';
+
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,12 +24,20 @@ export default function SignInForm() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axiosInstance.post<{
+      const response = await axios.post<{
         user: any;
-      }>("auth/login", {
-        email,
-        password,
-      });
+      }>(
+        `${BASE_URL}auth/login`,
+                {
+          email,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json", // Specify JSON content type
+          },
+        }
+      );
       if (response.status === 200) {
         
         console.log("allloal", response.data);

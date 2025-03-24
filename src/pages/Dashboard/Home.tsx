@@ -15,7 +15,7 @@ export default function Home() {
   useEffect(() => {
     const fetchOrganizerDetails = async () => {
       try {
-        const response = await axiosInstance.get("/auth/organizer/detail");
+        const response = await axiosInstance.get("auth/organizer/detail");
         const data = response.data; // Assuming the first object is the relevant one
         setOrganizerDetails(data);
       } catch (error) {
@@ -25,7 +25,7 @@ export default function Home() {
 
     const fetchEvents = async () => {
       try {
-        const response = await axiosInstance.get("/event/organizer/all");
+        const response = await axiosInstance.get("event/organizer/all");
         setEvents(response.data);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -54,7 +54,7 @@ export default function Home() {
 
         <div className="col-span-12 xl:col-span-5">
           {/* Pass organizer details to MonthlyTarget */}
-          <MonthlyTarget organizerDetails={organizerDetails} />
+          <MonthlyTarget events={events} />
         </div>
 
         <div className="col-span-12">
@@ -62,10 +62,10 @@ export default function Home() {
           <StatisticsChart events={events} />
         </div>
 
-        <div className="col-span-12 xl:col-span-5">
+        {/* <div className="col-span-12 xl:col-span-5"> */}
           {/* Pass organizer details to DemographicCard */}
-          <DemographicCard organizerDetails={organizerDetails} />
-        </div>
+          {/* <DemographicCard events={events} /> */}
+        {/* </div> */}
 
         <div className="col-span-12 xl:col-span-7">
           {/* Pass events to RecentOrders */}

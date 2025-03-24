@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="154" height="32">
+  <!-- Hiker Icon -->
+  <g transform="translate(0, 4)">
+    <circle cx="10" cy="10" r="8" fill="#2E8B57"/>
+    <path d="M 10 5 L 14 15 L 6 15 Z" fill="#FF8C00"/>
+  </g>
+
+  <!-- Text -->
+  <text x="30" y="24" font-family="Arial, sans-serif" font-size="20" fill="white">HikeHub</text>
+</svg>

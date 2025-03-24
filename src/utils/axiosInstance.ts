@@ -9,6 +9,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Allow cookies to be sent/received
 });
 
 interface DecodedToken extends JwtPayload {
@@ -16,25 +17,54 @@ interface DecodedToken extends JwtPayload {
 }
 
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = sessionStorage.getItem('accessToken'); // Retrieve token from session storage
+  async (config) => {
+    const token = sessionStorage.getItem('accessToken');
+    if (!token) {
+      performLogout();  // Logout immediately if no token is found
+      throw new Error('Session expired. Please log in again.');
+    }
     if (token) {
       const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
       const currentTime = Date.now() / 1000;
 
-      console.log(token)
-
       if (decodedToken.exp && decodedToken.exp < currentTime) {
-        performLogout();
-        throw new Error('Token expired');
+        try {
+          const refreshResponse = await axiosInstance.post('/auth/refresh');
+          const newToken = refreshResponse.data.token;
+          sessionStorage.setItem('accessToken', newToken);
+          config.headers.Authorization = `Bearer ${newToken}`;
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          performLogout();
+          throw new Error('Session expired. Please log in again.');
+        }
+      } else {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
       }
-
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
+  (error) => Promise.reject(error)
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401 && error.config && !error.config.__isRetry) {
+      error.config.__isRetry = true;
+      try {
+        const refreshResponse = await axiosInstance.post('/auth/refresh');
+        const newToken = refreshResponse.data.token;
+
+        sessionStorage.setItem('accessToken', newToken);
+        error.config.headers.Authorization = `Bearer ${newToken}`;
+        return axiosInstance(error.config);
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        performLogout();
+      }
+    }
     return Promise.reject(error);
   }
 );

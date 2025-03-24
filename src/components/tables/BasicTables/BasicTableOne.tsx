@@ -46,6 +46,40 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]); // State for categories
   const [viewEvent, setViewEvent] = useState<Event | null>(null); // State to hold the event to view
   const [isViewModalOpen, setIsViewModalOpen] = useState(false); // State to control the view modal
+
+  const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
+  const rowsPerPage = 6; // Number of rows per page
+  const [searchQuery, setSearchQuery] = useState(""); // Search query for filtering
+  const [filteredData, setFilteredData] = useState<Event[]>(tableData); // Filtered data
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    // Filter the table data based on the search query
+    const filtered = tableData.filter(
+      (event) =>
+        event.title.toLowerCase().includes(query) ||
+        event.location.toLowerCase().includes(query) ||
+        event.status.toLowerCase().includes(query)
+    );
+    setFilteredData(filtered);
+    setCurrentPage(1); // Reset to the first page after filtering
+  };
+
+
+  // Calculate the data to display on the current page
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Handle pagination
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   const { theme } = useTheme(); // Get the current theme (e.g., "light" or "dark")
   const [formData, setFormData] = useState({
     _id: "",
@@ -245,14 +279,23 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
 
   return (
     <>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-gray-800"></h2>
-        <button
-          onClick={handleAddNewEvent}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-        >
-          Add New Event
-        </button>
+        <div className="flex gap-4">
+          <Input
+            type="text"
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-64"
+          />
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+          >
+            Add New Event
+          </Button>
+        </div>
       </div>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
@@ -268,30 +311,19 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
               </TableRow>
             </TableHeader>
 
+
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {tableData.map((event) => (
+              {currentRows.map((event) => (
                 <TableRow key={event._id}>
-                  <TableCell className={`px-5 py-4 ${theme === "dark"
-                    ? "text-gray-400"
-                    : "text-gray-800"
-                    }`}>{event.title}</TableCell>
-                  <TableCell className={`px-5 py-4 ${theme === "dark"
-                    ? "text-blue-400 hover:underline"
-                    : "text-blue-500 hover:underline"
-                    }`}>
-                    <a
-                      href={event.location}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      View Map
-                    </a>
+                  <TableCell className="px-5 py-4 text-gray-800 dark:text-gray-400">
+                    {event.title}
                   </TableCell>
-                  <TableCell className={`px-5 py-4 ${theme === "dark"
-                    ? "text-gray-400"
-                    : "text-gray-800"
-                    }`}>{event.distance}</TableCell>
+                  <TableCell className="px-5 py-4 text-blue-500 hover:underline">
+                    {event.location}
+                  </TableCell>
+                  <TableCell className="px-5 py-4 text-gray-800 dark:text-gray-400">
+                    {event.distance}
+                  </TableCell>
                   <TableCell className="px-5 py-4">
                     <Badge
                       size="sm"
@@ -306,23 +338,52 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
                       {event.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className={`px-5 py-4 ${theme === "dark"
-                    ? "text-gray-400"
-                    : "text-gray-800"
-                    }`}>${event.price.toFixed(2)}</TableCell>
+                  <TableCell className="px-5 py-4 text-gray-800 dark:text-gray-400">
+                    ${event.price.toFixed(2)}
+                  </TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex gap-2">
-                      <button className="text-blue-500 hover:underline" onClick={() => handleViewEvent(event)} // Pass the event to the view handler
-                      >View</button>
-                      <button className="text-yellow-500 hover:underline" onClick={() => handleEditEvent(event)} // Pass the event to the edit handler
-                      >Edit</button>
-                      {/* <button className="text-red-500 hover:underline">Delete</button> */}
+                      <button
+                        className="text-blue-500 hover:underline"
+                        onClick={() => handleViewEvent(event)}
+                      >
+                        View
+                      </button>
+                      <button
+                        className="text-yellow-500 hover:underline"
+                        onClick={() => console.log("Edit event", event)}
+                      >
+                        Edit
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-between items-center mt-4">
+        <p className="text-sm text-gray-500">
+          Showing {indexOfFirstRow + 1} to{" "}
+          {Math.min(indexOfLastRow, filteredData.length)} of{" "}
+          {filteredData.length} entries
+        </p>
+        <div className="flex gap-2">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-3 py-1 rounded-md ${currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+            >
+              {index + 1}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -594,7 +655,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
         className="max-w-[700px] m-4"
       >
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-        <div className="px-2 pr-14">
+          <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Event Details
             </h4>
@@ -603,7 +664,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
             </p>
           </div>
           <div className="no-scrollbar custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-          {/* Carousel for Images */}
+            {/* Carousel for Images */}
             {viewEvent?.multimedia && viewEvent.multimedia.length > 0 && (
               <div className="mb-6">
                 <Swiper
@@ -651,6 +712,20 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
                 <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
                   <Label>Max Participants</Label>
                   <p className="text-gray-800 dark:text-white/90">{viewEvent.maxParticipants}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Booked Participants</Label>
+                  <p className="text-gray-800 dark:text-white/90">
+                    {viewEvent.bookedParticipants?.length || 0}
+                  </p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Likes</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.numberOfLikes || 0}</p>
+                </div>
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
+                  <Label>Views</Label>
+                  <p className="text-gray-800 dark:text-white/90">{viewEvent.views || 0}</p>
                 </div>
                 <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
                   <Label>Start Date</Label>
