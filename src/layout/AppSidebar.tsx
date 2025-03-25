@@ -6,6 +6,8 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   
+  ChatIcon,
+  
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
@@ -47,11 +49,12 @@ const navItems: NavItem[] = [
     name: "Profile",
     path: "/profile",
   },
-  // {
-  //   name: "Forms",
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  // },
+  {
+    name: "Chat",
+    icon: <ChatIcon />,
+    path: "/chat",
+
+  },
   // {
   //   name: "Tables",
   //   icon: <TableIcon />,
@@ -313,17 +316,17 @@ const AppSidebar: React.FC = () => {
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img
-                className="dark:hidden"
-                src="/images/logo/logo.png"
+                className="dark:hidden ml-6"
+                src="/images/logo/logo-dark.svg"
                 alt="Logo"
-                width={150}
+                width={180}
                 height={40}
               />
               <img
-                className="hidden dark:block"
-                src="/images/logo/logo.png"
+                className="hidden dark:block ml-6"
+                src="/images/logo/logo.svg"
                 alt="Logo"
-                width={150}
+                width={180}
                 height={40}
               />
             </>
@@ -331,8 +334,8 @@ const AppSidebar: React.FC = () => {
             <img
               src="/images/logo/logo-icon.svg"
               alt="Logo"
-              width={32}
-              height={32}
+              width={35}
+              height={35}
             />
           )}
         </Link>

@@ -7,6 +7,7 @@ import RecentOrders from "../../components/ecommerce/RecentOrders";
 import DemographicCard from "../../components/ecommerce/DemographicCard";
 import PageMeta from "../../components/common/PageMeta";
 import axiosInstance from "../../utils/axiosInstance";
+import { Spin } from "antd";
 
 export default function Home() {
   const [organizerDetails, setOrganizerDetails] = useState(null);
@@ -37,7 +38,7 @@ export default function Home() {
   }, []);
 
   if (!organizerDetails || events.length === 0) {
-    return <div>Loading...</div>; // Show a loading state while data is being fetched
+    return <Spin size="large" className="flex justify-center items-center min-h-screen" />; // Show a loading state while data is being fetched
   }
 
   return (
