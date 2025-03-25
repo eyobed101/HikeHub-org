@@ -15,4 +15,12 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    https: {
+      key: './cert.key',         // Path to your private key
+      cert: './cert.crt'        // Path to your certificate
+    },
+    host: 'localhost',          // Ensure it runs on localhost
+    port: 3000                  // Optional: Custom port
+  }
 });
