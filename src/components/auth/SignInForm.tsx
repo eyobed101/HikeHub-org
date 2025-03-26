@@ -26,24 +26,27 @@ export default function SignInForm() {
     try {
       const response = await axios.post<{
         user: any;
+        token: string;
       }>(
         `${BASE_URL}auth/login`,
-                {
+        {
           email,
           password,
         },
         {
           headers: {
-            "Content-Type": "application/json", // Specify JSON content type
+            "Content-Type": "application/json",
           },
+          withCredentials: true,
         }
       );
       if (response.status === 200) {
-        
-        console.log("allloal", response.data);
+
         const token = response.data.token;
-        dispatch(login( response.data.user)); // Dispatch the login action with user data
+
+        dispatch(login(response.data.user)); // Dispatch the login action with user data
         sessionStorage.setItem("accessToken", token); // Store user data in session storage
+
         navigate("/home"); // Redirect to the dashboard or desired route
       }
     } catch (error) {

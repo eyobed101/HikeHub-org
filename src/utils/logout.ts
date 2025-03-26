@@ -5,6 +5,6 @@ import { logout } from "../store/authSlice";
 export const performLogout = (): void => {
   store.dispatch(logout());
   sessionStorage.removeItem('accessToken');
-  // localStorage.removeItem('username');
+  localStorage.removeItem('refreshToken');
   // localStorage.removeItem('station');
 };

@@ -480,7 +480,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
                         onClick={() => {
                           window.open("https://www.google.com/maps", "_blank");
                         }}
-                        className="px-4 py-2 mt-2text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                        className="px-4 py-2 mt-2 mt-2text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
                       >
                         Open Google Maps
                       </Button>

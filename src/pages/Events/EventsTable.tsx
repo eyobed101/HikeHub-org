@@ -4,34 +4,40 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import EventTable from "../../components/tables/BasicTables/BasicTableOne";
+import ManageParticipants from "../../components/tables/ManageParticipant"; // Import the new component
 import { Spin, Alert } from "antd";
 
 export default function EventsTable() {
     const [tableData, setTableData] = useState<any[]>([]); // Define tableData as an array of any
+    const [allUsers, setAllUsers] = useState<any[]>([]); // Define allUsers as an array of any
     const [loading, setLoading] = useState<boolean>(true); // Define loading as a boolean
     const [error, setError] = useState<string>(""); // Define error as a string
 
     useEffect(() => {
-        const fetchEvents = async () => {
+        const fetchEventsAndUsers = async () => {
             try {
-                const response = await axiosInstance.get<{ data: any[] }>("event/organizer/all");
-
-                console.log("Fetched Data:", response.data);
-
-                const eventData = Array.isArray(response.data)
-                    ? response.data
-                    : response.data?.data || [];
-
+                // Fetch events
+                const eventsResponse = await axiosInstance.get<{ data: any[] }>("event/organizer/all");
+                const eventData = Array.isArray(eventsResponse.data)
+                    ? eventsResponse.data
+                    : eventsResponse.data?.data || [];
                 setTableData(eventData);
+
+                // Fetch all users
+                const usersResponse = await axiosInstance.get<{ data: any[] }>("auth/users"); // Replace with your actual endpoint
+                const usersData = Array.isArray(usersResponse.data)
+                    ? usersResponse.data
+                    : usersResponse.data?.data || [];
+                setAllUsers(usersData);
             } catch (error) {
-                console.error("Error fetching events:", error);
-                setError("Failed to load events. Please try again later.");
+                console.error("Error fetching data:", error);
+                setError("Failed to load data. Please try again later.");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchEvents();
+        fetchEventsAndUsers();
     }, []);
 
     if (loading) {
@@ -55,7 +61,13 @@ export default function EventsTable() {
                             showIcon
                         />
                     ) : (
-                        <EventTable tableData={tableData} />
+                        <>
+                            {/* Render the EventTable component */}
+                            <EventTable tableData={tableData} />
+
+                            {/* Render the ManageParticipants component */}
+                            <ManageParticipants events={tableData} allUsers={allUsers} />
+                        </>
                     )}
                 </ComponentCard>
             </div>

@@ -5,6 +5,8 @@ import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import axiosInstance from "../../utils/axiosInstance";
+import { Spin } from "antd"; // Import Spin from Ant Design or any spinner component you use
+
 
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
@@ -25,11 +27,15 @@ export default function UserMetaCard() {
   });
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(true); // Add loading state
+
 
   useEffect(() => {
     const fetchOrganizerDetails = async () => {
       try {
-        const response = await axiosInstance.get("/auth/organizer/detail");
+        setLoading(true); // Set loading to true before fetching data
+
+        const response = await axiosInstance.get("auth/organizer/detail");
         const data = response.data; // Assuming the first object is the relevant one
         if (data) {
           console.log("Organizer details:", data);
@@ -55,6 +61,8 @@ export default function UserMetaCard() {
         }
       } catch (error) {
         console.error("Error fetching organizer details:", error);
+      }finally {
+        setLoading(false); // Set loading to false after fetching data
       }
     };
 
@@ -79,7 +87,9 @@ export default function UserMetaCard() {
   }, []);
 
   const handleSave = async () => {
+    setLoading(true); // Set loading to true before fetching data
 
+    closeModal();
     try {
       const formData = new FormData();
       formData.append("phone_number", organizerDetails.phone_number);
@@ -102,9 +112,11 @@ export default function UserMetaCard() {
       });
 
       console.log("Organizer details updated successfully!");
-      closeModal();
     } catch (error) {
       console.error("Error updating organizer details:", error);
+    }
+    finally {
+      setLoading(false); // Set loading to false after fetching data
     }
     closeModal();
   };
@@ -114,6 +126,10 @@ export default function UserMetaCard() {
       setLogoFile(e.target.files[0]);
     }
   };
+
+  if (loading) {
+    return <Spin size="large" className="flex justify-center items-center min-h-screen" />;
+  }
 
   return (
     <>

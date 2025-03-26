@@ -5,6 +5,8 @@ import { useDispatch } from "react-redux";
 import { Link } from "react-router";
 import { logout } from "../../store/authSlice";
 import axiosInstance from "../../utils/axiosInstance";
+import { performLogout } from "../../utils/logout";
+
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +18,7 @@ export default function UserDropdown() {
   const dispatch = useDispatch();
 
   const handleSignOut = async () => {
+    performLogout();
     dispatch(logout());
   };
 
