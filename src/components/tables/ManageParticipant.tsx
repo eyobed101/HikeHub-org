@@ -6,22 +6,36 @@ import Label from "../form/Label"; // Reusable Label component
 import Button from "../ui/Button/Button"; // Reusable Button component
 import Input from "../form/input/InputField"; // Reusable Input component
 
-export default function ManageParticipants({ events, allUsers }: { events: Event[]; allUsers: User[] }) {
+export default function ManageParticipants({
+  events,
+  allUsers,
+}: {
+  events: Event[];
+  allUsers: User[];
+}) {
   const [selectedEventId, setSelectedEventId] = useState<string>(""); // Selected event ID
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]); // Selected user IDs for adding/removing
   const [searchQuery, setSearchQuery] = useState<string>(""); // Search query for filtering users
+  const [action, setAction] = useState<"add" | "remove">("add"); // Action type (add or remove)
   const [loading, setLoading] = useState(false); // Loading state for API requests
 
   // Get the booked participants for the selected event
   const bookedParticipants =
     events.find((event) => event._id === selectedEventId)?.bookedParticipants || [];
 
-  // Filter users based on the search query
-  const filteredUsers = allUsers
-    .filter((user) => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
-    .slice(0, 10); // Show only the top 10 users
+  // Filter users based on the search query and action
+  const filteredUsers = allUsers.filter((user) => {
+    const matchesSearchQuery = user.username
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const isRelevantForAction =
+      action === "add"
+        ? !bookedParticipants.includes(user.id) // For "add", exclude already booked participants
+        : bookedParticipants.includes(user.id); // For "remove", include only booked participants
+    return matchesSearchQuery && isRelevantForAction;
+  });
 
-  // Handle checkbox toggle
+  // Handle checkbox toggle for adding or removing users
   const handleCheckboxChange = (userId: string) => {
     setSelectedUsers((prev) =>
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
@@ -29,7 +43,7 @@ export default function ManageParticipants({ events, allUsers }: { events: Event
   };
 
   // Handle add or remove participants
-  const handleManageParticipants = async (action: "add" | "remove") => {
+  const handleManageParticipants = async () => {
     if (!selectedEventId) {
       toast.error("Please select an event.");
       return;
@@ -43,7 +57,7 @@ export default function ManageParticipants({ events, allUsers }: { events: Event
     setLoading(true);
     try {
       const response = await axiosInstance.post(
-        "events/manageParticipants",
+        "event/manageParticipants",
         { userIds: selectedUsers, action },
         {
           headers: {
@@ -92,6 +106,18 @@ export default function ManageParticipants({ events, allUsers }: { events: Event
         </select>
       </div>
       <div className="mb-4">
+        <Label htmlFor="action-select">Action</Label>
+        <select
+          id="action-select"
+          value={action}
+          onChange={(e) => setAction(e.target.value as "add" | "remove")}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+        >
+          <option value="add">Add Participants</option>
+          <option value="remove">Remove Participants</option>
+        </select>
+      </div>
+      <div className="mb-4">
         <Label htmlFor="search-users">Search Users</Label>
         <Input
           id="search-users"
@@ -102,35 +128,39 @@ export default function ManageParticipants({ events, allUsers }: { events: Event
         />
       </div>
       <div className="mb-4">
-        <Label>Select Participants</Label>
+        <Label>
+          {action === "add" ? "Available Users" : "Participants in Event"}
+        </Label>
         <div className="max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-4 dark:border-gray-700 dark:bg-gray-800">
-          {filteredUsers.map((user) => (
-            <div key={user._id} className="flex items-center gap-3 mb-2">
-              <input
-                type="checkbox"
-                checked={selectedUsers.includes(user._id)}
-                onChange={() => handleCheckboxChange(user._id)}
-                className="form-checkbox h-5 w-5 text-blue-600"
-              />
-              <span className="text-gray-800 dark:text-white">{user.username}</span>
-            </div>
-          ))}
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between gap-3 mb-2"
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(user.id)}
+                    onChange={() => handleCheckboxChange(user.id)}
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                  />
+                  <span className="text-gray-800 dark:text-white">{user.username}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400">No users found.</p>
+          )}
         </div>
       </div>
-      <div className="mt-4 flex justify-end gap-4">
+      <div className="mt-4 flex justify-end">
         <Button
-          onClick={() => handleManageParticipants("add")}
+          onClick={handleManageParticipants}
           disabled={loading}
-          className="bg-green-500 hover:bg-green-600"
+          className="bg-blue-500 hover:bg-blue-600"
         >
-          {loading && selectedUsers.length > 0 ? "Adding..." : "Add Participants"}
-        </Button>
-        <Button
-          onClick={() => handleManageParticipants("remove")}
-          disabled={loading}
-          className="bg-red-500 hover:bg-red-600"
-        >
-          {loading && selectedUsers.length > 0 ? "Removing..." : "Remove Participants"}
+          {loading ? "Saving..." : "Save Changes"}
         </Button>
       </div>
     </div>

@@ -25,9 +25,8 @@ export default function EventsTable() {
 
                 // Fetch all users
                 const usersResponse = await axiosInstance.get<{ data: any[] }>("auth/users"); // Replace with your actual endpoint
-                const usersData = Array.isArray(usersResponse.data)
-                    ? usersResponse.data
-                    : usersResponse.data?.data || [];
+                const usersData = usersResponse.data?.Hikers || [];
+                console.log("usersData", usersData);
                 setAllUsers(usersData);
             } catch (error) {
                 console.error("Error fetching data:", error);
