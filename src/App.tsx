@@ -21,7 +21,7 @@ import Home from "./pages/Dashboard/Home";
 import EventsTable from "./pages/Events/EventsTable";
 import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
-import ChatPage from "./pages/Chats/ChatPage";
+import ChatPage from "./pages/ChatPage/chat";
 
 const protectedRoutes = [
   { path: "/", element: <Home /> },

@@ -85,7 +85,7 @@ export default function ManageParticipants({
   };
 
   return (
-    <div className="mt-6 p-4 border border-gray-200 rounded-lg bg-white dark:border-gray-800 dark:bg-gray-900">
+    <div className="mt-6 p-4  rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
         Manage Participants
       </h3>
@@ -125,6 +125,7 @@ export default function ManageParticipants({
           placeholder="Search users by username..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          className="border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]"
         />
       </div>
       <div className="mb-4">
