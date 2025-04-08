@@ -1,13 +1,114 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Conversation from "./Conversation";
 import Messages from "./Messages";
+import io from 'socket.io-client';
+import axiosInstance from "../../utils/axiosInstance";
+import { useSelector } from "react-redux";
+
+const socket = io('https://hikeapi.issipeteta.net/api/v1.0/');
 
 const Chat: React.FC = () => {
+  const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const [chatId, setChatId] = useState<string | null>(null); // Dynamically set chatId
+  const current = useSelector((state) => state.user);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axiosInstance.get('auth/users');
+      const { Superadmins, EventOrganizers, Hikers } = response.data;
+
+      const allUsers = [
+        ...Superadmins.map(user => ({ ...user, role: 'Superadmin' })),
+        ...EventOrganizers.map(user => ({ ...user, role: 'Event Organizer' })),
+        ...Hikers.map(user => ({ ...user, role: 'Hiker' }))
+      ];
+
+      setUsers(allUsers);
+
+      const loggedInUser = allUsers.find((user) => user.username === current.username);
+      if (loggedInUser) {
+        setLoggedInUserId(loggedInUser.id);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+
+    if (!chatId) return; // Ensure chatId is set before proceeding
+
+    const fetchChatHistory = async () => {
+      try {
+        const response = await axiosInstance.get(`auth/messages/${chatId}`);
+        const formattedMessages = response.data.messages.map((message) => ({
+          _id: message._id,
+          text: message.message,
+          createdAt: new Date(message.createdAt),
+          user: {
+            _id: message.sender.username,
+            name: message.sender.username,
+          },
+        }));
+        setMessages(formattedMessages);
+      } catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    };
+
+    fetchChatHistory();
+
+    socket.emit('join-chat', chatId);
+
+    socket.on('receive-message', (message) => {
+      const receivedMessage = {
+        _id: message._id || '',
+        text: message.message || '',
+        createdAt: new Date(message.createdAt) || new Date(),
+        user: {
+          _id: message.sender?.username || 'unknown',
+          name: message.sender?.username || 'Unknown User',
+        },
+      };
+
+      setMessages((previousMessages) => [...previousMessages, receivedMessage]);
+    });
+
+    return () => {
+      socket.off('receive-message');
+      socket.emit('leave-chat', chatId); // Leave the chat room on cleanup
+    };
+  }, [chatId]);
+
+  const onSend = useCallback(
+    (messages = []) => {
+      if (!loggedInUserId || !chatId) return;
+
+      const message = messages[0];
+
+      socket.emit('send-message', {
+        chatId,
+        senderId: loggedInUserId,
+        message: message.text,
+        messageType: 'text',
+        image: '',
+        video: '',
+        audio: ''
+      });
+
+      setMessages((previousMessages) => [...previousMessages, message]);
+    },
+    [chatId, loggedInUserId]
+  );
+
   return (
     <div className="">
       <div className="flex bg-white dark:bg-gray-900">
         {/* Sidebar */}
-        <div className="w-20 text-gray-500 h-screen flex flex-col items-center justify-between py-5">
+        {/* <div className="w-20 text-gray-500 h-screen flex flex-col items-center justify-between py-5">
           <div>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +192,7 @@ const Chat: React.FC = () => {
               />
             </svg>
           </div>
-        </div>
+        </div> */}
 
         {/* Chat Sidebar */}
         <div className="w-80 h-screen dark:bg-gray-800 bg-gray-100 p-2 hidden md:block">
@@ -131,7 +232,10 @@ const Chat: React.FC = () => {
 
         {/* Messages Section */}
         <div className="flex-grow h-screen p-2 rounded-md">
-          <Messages />
+          <Messages
+            messages={messages}
+            onSend={onSend}
+          />
         </div>
       </div>
     </div>

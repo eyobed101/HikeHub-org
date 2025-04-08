@@ -4,7 +4,7 @@ const Messages: React.FC = () => {
   return (
     <div className="flex-grow h-full flex flex-col">
       {/* Header Section */}
-      <div className="w-full h-15 p-1 bg-blue-600 dark:bg-gray-800 shadow-md rounded-xl rounded-bl-none rounded-br-none">
+      <div className="w-full h-18 p-1 bg-blue-600 dark:bg-gray-800 shadow-md rounded-xl rounded-bl-none rounded-br-none">
         <div className="flex p-2 align-middle items-center">
           <div className="p-2 md:hidden rounded-full mr-1 hover:bg-blue-500 text-white">
             <svg
@@ -99,8 +99,8 @@ const Messages: React.FC = () => {
       </div>
 
       {/* Input Section */}
-      <div className="h-15 p-3 rounded-xl rounded-tr-none rounded-tl-none bg-gray-100 dark:bg-gray-800">
-        <div className="flex items-center">
+      <div className="h-18 p-3 rounded-xl rounded-tr-none rounded-tl-none bg-gray-100 dark:bg-gray-800">
+        <div className="flex items-center h-full">
           <div className="p-2 text-gray-600 dark:text-gray-200">
             <svg
               xmlns="http://www.w3.org/2000/svg"
