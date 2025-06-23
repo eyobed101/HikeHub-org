@@ -44,7 +44,8 @@ export default function SignInForm() {
 
         const token = response.data.token;
 
-        dispatch(login(response.data.user)); // Dispatch the login action with user data
+
+        dispatch(login(response.data._id)); // Dispatch the login action with user data
         sessionStorage.setItem("accessToken", token); // Store user data in session storage
 
         navigate("/home"); // Redirect to the dashboard or desired route
