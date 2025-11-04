@@ -17,20 +17,28 @@ export default function MonthlyTarget({ events }) {
     let revenue = 0;
     let target = 0;
 
-    console.log("Events:", events);
+    // Ensure events is an array
+    const eventsArray = Array.isArray(events) ? events : [];
+
+    console.log("Events:", eventsArray);
 
     // Loop through all events to calculate revenue and target for the current month
-    events.forEach((event) => {
+    eventsArray.forEach((event) => {
+      if (!event || !event.endDate) return;
+      
       const endDate = new Date(event.endDate);
       const eventMonth = endDate.getMonth();
       const eventYear = endDate.getFullYear();
 
       if (eventMonth === currentMonth && eventYear === currentYear) {
         // Revenue = price * bookedParticipants.length
-        revenue += event.price * event.bookedParticipants.length;
+        const bookedCount = Array.isArray(event.bookedParticipants) 
+          ? event.bookedParticipants.length 
+          : 0;
+        revenue += (event.price || 0) * bookedCount;
 
         // Target = price * maxParticipants
-        target += event.price * event.maxParticipants;
+        target += (event.price || 0) * (event.maxParticipants || 0);
       }
     });
 

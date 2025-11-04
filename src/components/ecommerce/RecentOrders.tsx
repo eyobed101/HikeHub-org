@@ -7,12 +7,17 @@ import {
 } from "../ui/table";
 
 export default function RecentOrders({ events }) {
+  // Ensure events is an array
+  const eventsArray = Array.isArray(events) ? events : [];
+  
   // Sort events by engagement and likes, then take the top 5
-  const topEvents = [...events]
+  const topEvents = eventsArray
     .sort(
-      (a, b) =>
-        b.bookedParticipants.length + b.numberOfLikes -
-        (a.bookedParticipants.length + a.numberOfLikes)
+      (a, b) => {
+        const aParticipants = Array.isArray(a.bookedParticipants) ? a.bookedParticipants.length : 0;
+        const bParticipants = Array.isArray(b.bookedParticipants) ? b.bookedParticipants.length : 0;
+        return (bParticipants + (b.numberOfLikes || 0)) - (aParticipants + (a.numberOfLikes || 0));
+      }
     )
     .slice(0, 5); // Take the top 5 events
 
@@ -96,7 +101,7 @@ export default function RecentOrders({ events }) {
                   {event.location}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {event.bookedParticipants.length}
+                  {Array.isArray(event.bookedParticipants) ? event.bookedParticipants.length : 0}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   {event.numberOfLikes}

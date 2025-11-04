@@ -26,8 +26,13 @@ export default function Home() {
 
     const fetchEvents = async () => {
       try {
-        const response = await axiosInstance.get("event/organizer/all");
-        setEvents(response.data);
+        // Fetch all events without pagination for dashboard charts
+        const response = await axiosInstance.get("event/organizer/all?page=1&limit=1000&sortBy=createdAt&sortOrder=desc");
+        // Handle both old format (array) and new format (object with data property)
+        const eventData = Array.isArray(response.data)
+          ? response.data
+          : response.data?.data || [];
+        setEvents(eventData);
       } catch (error) {
         console.error("Error fetching events:", error);
       }

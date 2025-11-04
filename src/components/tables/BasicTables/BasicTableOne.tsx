@@ -52,20 +52,30 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
   const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
   const rowsPerPage = 6; // Number of rows per page
   const [searchQuery, setSearchQuery] = useState(""); // Search query for filtering
-  const [filteredData, setFilteredData] = useState<Event[]>(tableData); // Filtered data
+  const [filteredData, setFilteredData] = useState<Event[]>([]); // Filtered data
   const [loading, setLoading] = useState(false); // State to track loading
+
+  // Ensure tableData is always an array and update filteredData when tableData changes
+  useEffect(() => {
+    const eventsArray = Array.isArray(tableData) ? tableData : [];
+    setFilteredData(eventsArray);
+    setCurrentPage(1); // Reset to first page when data changes
+  }, [tableData]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
 
+    // Ensure tableData is an array before filtering
+    const eventsArray = Array.isArray(tableData) ? tableData : [];
+    
     // Filter the table data based on the search query
-    const filtered = tableData.filter(
+    const filtered = eventsArray.filter(
       (event) =>
-        event.title.toLowerCase().includes(query) ||
-        event.location.toLowerCase().includes(query) ||
-        event.status.toLowerCase().includes(query)
+        event?.title?.toLowerCase().includes(query) ||
+        event?.location?.toLowerCase().includes(query) ||
+        event?.status?.toLowerCase().includes(query)
     );
     setFilteredData(filtered);
     setCurrentPage(1); // Reset to the first page after filtering
@@ -75,10 +85,10 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
   // Calculate the data to display on the current page
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = Array.isArray(filteredData) ? filteredData.slice(indexOfFirstRow, indexOfLastRow) : [];
 
   // Handle pagination
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const totalPages = Math.ceil((Array.isArray(filteredData) ? filteredData.length : 0) / rowsPerPage);
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -135,7 +145,11 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
         const response = await axiosInstance.get("event/organizer/all"); // Replace with your actual endpoint
         if (response.status === 200) {
           console.log("Table data fetched:", response.data);
-          setFilteredData(response.data); // Update filtered data
+          // Handle both old format (array) and new format (object with data property)
+          const eventData = Array.isArray(response.data)
+            ? response.data
+            : response.data?.data || [];
+          setFilteredData(eventData); // Update filtered data
         } else {
           console.error("Failed to fetch table data:", response.data);
           toast.error("Failed to fetch table data. Please try again.");
@@ -411,12 +425,12 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
-        <p className="text-sm text-gray-500">
+        {/* <p className="text-sm text-gray-500">
           Showing {indexOfFirstRow + 1} to{" "}
-          {Math.min(indexOfLastRow, filteredData.length)} of{" "}
-          {filteredData.length} entries
-        </p>
-        <div className="flex gap-2">
+          {Math.min(indexOfLastRow, Array.isArray(filteredData) ? filteredData.length : 0)} of{" "}
+          {Array.isArray(filteredData) ? filteredData.length : 0} entries
+        </p> */}
+        {/* <div className="flex gap-2">
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index}
@@ -429,7 +443,7 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
               {index + 1}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Modal for Adding New Event */}

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import { performLogout } from "./logout";
 import { message } from 'antd';
@@ -20,12 +20,33 @@ interface DecodedToken extends JwtPayload {
 
 // Track refresh state to prevent concurrent refreshes
 let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
 
-// Function to check token expiration
+// Function to process queued requests after token refresh
+const processQueue = (error: any = null, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
+// Function to check token expiration (with 5 minute buffer)
 const isTokenExpired = (token: string): boolean => {
   try {
     const decoded = jwtDecode<DecodedToken>(token);
-    return decoded.exp ? decoded.exp * 1000 < Date.now() : true;
+    if (!decoded.exp) return true;
+    // Refresh if token expires in less than 5 minutes
+    const expirationTime = decoded.exp * 1000;
+    const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+    return expirationTime - Date.now() < bufferTime;
   } catch {
     return true;
   }
@@ -34,7 +55,16 @@ const isTokenExpired = (token: string): boolean => {
 // Function to refresh token
 const refreshAccessToken = async (): Promise<string> => {
   if (isRefreshing) {
-    throw new Error("Refresh already in progress");
+    // If already refreshing, wait for it to complete
+    return new Promise((resolve, reject) => {
+      failedQueue.push({ resolve, reject });
+    }).then(() => {
+      const token = sessionStorage.getItem("accessToken");
+      if (!token) {
+        throw new Error("No access token found");
+      }
+      return token;
+    });
   }
 
   isRefreshing = true;
@@ -47,9 +77,18 @@ const refreshAccessToken = async (): Promise<string> => {
       throw new Error("No token received in refresh response");
     }
     
-    return refreshResponse.data.token;
+    const newToken = refreshResponse.data.token;
+    sessionStorage.setItem("accessToken", newToken);
+    
+    // Process queued requests
+    processQueue(null, newToken);
+    
+    return newToken;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
+    // Process queued requests with error
+    processQueue(error, null);
+    
+    if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
       performLogout();
       throw new Error("Session expired. Please log in again.");
     }
@@ -61,9 +100,9 @@ const refreshAccessToken = async (): Promise<string> => {
 
 // Request Interceptor
 axiosInstance.interceptors.request.use(
-  async (config) => {
+  async (config: InternalAxiosRequestConfig) => {
     // List of endpoints that don't require authentication
-    const publicEndpoints = ['auth/login', 'auth/register', 'auth/refresh', 'auth/signup', 'auth/signin'];
+    const publicEndpoints = ['auth/login', 'auth/register', 'auth/refresh', 'auth/signup', 'auth/signin', 'auth/send-otp', 'auth/verify-otp'];
     
     // Check if this is a public endpoint
     const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url?.includes(endpoint));
@@ -80,11 +119,10 @@ axiosInstance.interceptors.request.use(
       throw new Error("No access token found. Please log in.");
     }
 
-    // Check if token is expired or about to expire (with 30 second buffer)
+    // Check if token is expired or about to expire (with 5 minute buffer)
     if (isTokenExpired(token)) {
       try {
         const newToken = await refreshAccessToken();
-        sessionStorage.setItem("accessToken", newToken);
         if (config.headers) {
           config.headers.Authorization = `Bearer ${newToken}`;
         }
@@ -105,24 +143,58 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor (simplified as per your request)
+// Response Interceptor with automatic token refresh on 401
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.config?.url?.includes('auth/refresh')) {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // Don't retry refresh endpoint
+    if (originalRequest?.url?.includes('auth/refresh')) {
+      performLogout();
       return Promise.reject(error);
     }
 
+    // Handle 401 Unauthorized - token expired or invalid
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Try to refresh the token
+        const newToken = await refreshAccessToken();
+        
+        // Update the authorization header with the new token
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
+        
+        // Retry the original request with the new token
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed, logout user
+        performLogout();
+        message.error("Your session has expired. Please log in again.");
+        return Promise.reject(refreshError);
+      }
+    }
+
+    // Handle other errors
     if (error.response) {
       switch (error.response.status) {
         case 403:
           message.error('You do not have permission to access this resource.');
           break;
+        case 404:
+          // Don't show error for 404, let the component handle it
+          break;
         case 500:
           message.error('Server error occurred. Please try again later.');
           break;
         default:
-          message.error(error.response.data?.message || 'An error occurred');
+          // Only show error message if it's not a 401 (already handled above)
+          if (error.response.status !== 401) {
+            message.error(error.response.data?.message || 'An error occurred');
+          }
       }
     } else if (error.request) {
       message.error('Network error. Please check your connection.');

@@ -6,20 +6,28 @@ import ChartTab from "../common/ChartTab";
 export default function StatisticsChart({ events }) {
   const [filter, setFilter] = useState("Monthly"); // State to track the selected filter
 
+  // Ensure events is an array
+  const eventsArray = Array.isArray(events) ? events : [];
+
   // Initialize arrays for participants and revenue
   const monthlyParticipants = new Array(12).fill(0);
   const monthlyRevenue = new Array(12).fill(0);
 
   // Process the events to calculate monthly statistics
-  events.forEach((event) => {
+  eventsArray.forEach((event) => {
+    if (!event || !event.endDate) return;
+    
     const endDate = new Date(event.endDate);
     const month = endDate.getMonth(); // Get the month (0 = January, 11 = December)
 
     // Add the number of booked participants to the corresponding month
-    monthlyParticipants[month] += event.bookedParticipants.length;
+    const bookedCount = Array.isArray(event.bookedParticipants) 
+      ? event.bookedParticipants.length 
+      : 0;
+    monthlyParticipants[month] += bookedCount;
 
     // Add the revenue (price * booked participants) to the corresponding month
-    monthlyRevenue[month] += event.price * event.bookedParticipants.length;
+    monthlyRevenue[month] += (event.price || 0) * bookedCount;
   });
 
   // Calculate quarterly data

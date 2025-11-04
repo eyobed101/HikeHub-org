@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
-import { Spin, message, Modal, Tag, Button, Tabs, Input, Badge } from "antd";
+import { Spin, message, Modal, Tag, Button, Input, Badge, Pagination, Select } from "antd";
 import { 
   CheckCircleOutlined, 
   ClockCircleOutlined, 
@@ -11,7 +11,8 @@ import {
   SearchOutlined,
   EyeOutlined,
   CheckOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  DollarOutlined
 } from "@ant-design/icons";
 // Date formatting helper
 const formatDate = (dateString: string) => {
@@ -24,8 +25,6 @@ const formatDate = (dateString: string) => {
     minute: "2-digit",
   });
 };
-
-const { TabPane } = Tabs;
 
 interface Payment {
   _id: string;
@@ -57,6 +56,27 @@ interface Event {
   bookedParticipants: string[];
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+interface PaymentResponse {
+  data: Payment[];
+  pagination: PaginationInfo;
+}
+
+interface PaymentCounts {
+  all: number;
+  pending: number;
+  verified: number;
+  expired: number;
+}
+
 export default function ManageParticipants() {
   const [events, setEvents] = useState<Event[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -64,15 +84,51 @@ export default function ManageParticipants() {
   const [verifying, setVerifying] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
   const [paymentDetailModal, setPaymentDetailModal] = useState<{
     visible: boolean;
     payment: Payment | null;
   }>({ visible: false, payment: null });
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
+  
+  // Payment counts by status (for badges and summary cards)
+  const [paymentCounts, setPaymentCounts] = useState<PaymentCounts>({
+    all: 0,
+    pending: 0,
+    verified: 0,
+    expired: 0,
+  });
+  
+  // Filter state
+  const [activeTab, setActiveTab] = useState<string>("all");
 
-  // Fetch events
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setCurrentPage(1); // Reset to first page on search
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch events with pagination
   const fetchEvents = async () => {
     try {
-      const response = await axiosInstance.get<Event[]>("event/organizer/all");
+      const response = await axiosInstance.get<{ data: Event[]; pagination?: PaginationInfo }>(
+        `event/organizer/all?page=1&limit=100&sortBy=createdAt&sortOrder=desc`
+      );
       const eventData = Array.isArray(response.data)
         ? response.data
         : response.data?.data || [];
@@ -86,43 +142,58 @@ export default function ManageParticipants() {
     }
   };
 
-  // Fetch payments
-  const fetchPayments = async () => {
+  // Fetch payment counts by status for summary cards
+  const fetchPaymentCounts = useCallback(async () => {
+    if (!selectedEventId) return;
+    
+    try {
+      const response = await axiosInstance.get<PaymentCounts>(
+        `payment/event/${selectedEventId}/counts`
+      );
+      setPaymentCounts(response.data || { all: 0, pending: 0, verified: 0, expired: 0 });
+    } catch (error) {
+      console.error("Error fetching payment counts:", error);
+      // Don't show error, just reset counts
+      setPaymentCounts({ all: 0, pending: 0, verified: 0, expired: 0 });
+    }
+  }, [selectedEventId]);
+
+  // Fetch payments with pagination and filters
+  const fetchPayments = useCallback(async () => {
     if (!selectedEventId) return;
     
     try {
       setLoading(true);
-      // Fetch all payments first, then filter by event
-      const response = await axiosInstance.get<Payment[]>("payment/all");
-      const allPayments = Array.isArray(response.data)
-        ? response.data
-        : response.data?.data || [];
       
-      // Filter payments for selected event and populate user/event data
-      const eventPayments = allPayments.filter(
-        (payment: any) => payment.event?._id === selectedEventId || payment.event === selectedEventId
+      // Determine status filter based on active tab
+      const status = activeTab !== "all" ? activeTab : "";
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
+        ...(status && { status }),
+      });
+
+      const response = await axiosInstance.get<PaymentResponse>(
+        `payment/event/${selectedEventId}?${params.toString()}`
       );
       
-      // Fetch detailed payment info if needed
-      const detailedPayments = await Promise.all(
-        eventPayments.map(async (payment: any) => {
-          try {
-            const detailResponse = await axiosInstance.get(`payment/${payment._id}`);
-            return detailResponse.data;
-          } catch {
-            return payment;
-          }
-        })
-      );
+      const paymentData = response.data?.data || [];
+      const paginationData = response.data?.pagination || pagination;
       
-      setPayments(detailedPayments);
+      setPayments(paymentData);
+      setPagination(paginationData);
     } catch (error) {
       console.error("Error fetching payments:", error);
       message.error("Failed to load payments");
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedEventId, currentPage, pageSize, debouncedSearchQuery, activeTab]);
 
   useEffect(() => {
     fetchEvents();
@@ -132,26 +203,20 @@ export default function ManageParticipants() {
     if (selectedEventId) {
       fetchPayments();
     }
-  }, [selectedEventId]);
+  }, [selectedEventId, currentPage, pageSize, debouncedSearchQuery, activeTab, fetchPayments]);
+
+  // Fetch counts separately - only when event changes or after verification
+  useEffect(() => {
+    if (selectedEventId) {
+      fetchPaymentCounts();
+    }
+  }, [selectedEventId, fetchPaymentCounts]);
 
   // Get selected event
   const selectedEvent = events.find((e) => e._id === selectedEventId);
 
-  // Filter payments based on status and search
-  const filteredPayments = payments.filter((payment) => {
-    const matchesSearch =
-      payment.user?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.user?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.user?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.paymentCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      payment.orderCode?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
-
-  const pendingPayments = filteredPayments.filter((p) => p.status === "pending");
-  const verifiedPayments = filteredPayments.filter((p) => p.status === "verified");
-  const expiredPayments = filteredPayments.filter((p) => p.status === "expired");
+  // No client-side filtering needed - server handles it
+  // Just use payments directly from the server response
 
   // Verify payment
   const handleVerifyPayment = async (paymentCode: string) => {
@@ -164,6 +229,7 @@ export default function ManageParticipants() {
       if (response.data.status === 1 || response.status === 200) {
         message.success("Payment verified successfully!");
         fetchPayments(); // Refresh payments
+        fetchPaymentCounts(); // Refresh counts
       } else {
         message.error(response.data.message || "Failed to verify payment");
       }
@@ -175,6 +241,20 @@ export default function ManageParticipants() {
     } finally {
       setVerifying(null);
     }
+  };
+
+  // Handle pagination change
+  const handlePageChange = (page: number, pageSize?: number) => {
+    setCurrentPage(page);
+    if (pageSize) {
+      setPageSize(pageSize);
+    }
+  };
+
+  // Handle tab change
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    setCurrentPage(1); // Reset to first page on tab change
   };
 
   // View payment details
@@ -360,13 +440,13 @@ export default function ManageParticipants() {
                 <div>
                   <span className="text-gray-500 dark:text-gray-400">Reservations:</span>
                   <p className="font-semibold text-gray-800 dark:text-white">
-                    {pendingPayments.length}
+                    {paymentCounts.pending}
                   </p>
                 </div>
                 <div>
                   <span className="text-gray-500 dark:text-gray-400">Confirmed:</span>
                   <p className="font-semibold text-green-600 dark:text-green-400">
-                    {verifiedPayments.length}
+                    {paymentCounts.verified}
                   </p>
                 </div>
               </div>
@@ -385,107 +465,157 @@ export default function ManageParticipants() {
             />
           </div>
 
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <Spin size="large" />
+          {/* Main Content Area with Sidebar */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Main Content */}
+            <div className="flex-1 order-2 lg:order-1">
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <Spin size="large" />
+                </div>
+              ) : (
+                <>
+                  <div className="mt-4">
+                    {payments.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        {activeTab === "all" && "No payments found"}
+                        {activeTab === "pending" && "No pending payments"}
+                        {activeTab === "verified" && "No confirmed bookings"}
+                        {activeTab === "expired" && "No expired payments"}
+                      </div>
+                    ) : (
+                      payments.map((payment) =>
+                        renderPaymentCard(payment, activeTab === "all" || activeTab === "pending")
+                      )
+                    )}
+                  </div>
+
+                  {/* Pagination */}
+                  {pagination.totalItems > 0 && (
+                    <div className="mt-6 flex justify-between items-center">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.totalItems)} of {pagination.totalItems} payments
+                      </div>
+                      <Pagination
+                        current={currentPage}
+                        total={pagination.totalItems}
+                        pageSize={pageSize}
+                        showSizeChanger
+                        showQuickJumper
+                        pageSizeOptions={['10', '20', '50', '100']}
+                        onChange={handlePageChange}
+                        onShowSizeChange={handlePageChange}
+                        showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          ) : (
-            <Tabs defaultActiveKey="all">
-              <TabPane
-                tab={
-                  <span>
-                    All Payments
-                    <Badge count={filteredPayments.length} style={{ marginLeft: 8 }} />
-                  </span>
-                }
-                key="all"
-              >
-                <div className="mt-4">
-                  {filteredPayments.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                      No payments found
-                    </div>
-                  ) : (
-                    filteredPayments.map((payment) =>
-                      renderPaymentCard(payment, true)
-                    )
-                  )}
-                </div>
-              </TabPane>
 
-              <TabPane
-                tab={
-                  <span>
-                    Reservations (Pending)
-                    <Badge count={pendingPayments.length} style={{ marginLeft: 8 }} />
-                  </span>
-                }
-                key="pending"
-              >
-                <div className="mt-4">
-                  {pendingPayments.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                      No pending payments
+            {/* Right Sidebar */}
+            <div className="w-full lg:w-64 flex-shrink-0 order-1 lg:order-2">
+              <div className="lg:sticky lg:top-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wide">
+                  Filter by Status
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleTabChange("all")}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      activeTab === "all"
+                        ? "bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300"
+                        : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <DollarOutlined className="text-base" />
+                      <span className="font-medium">All Payments</span>
                     </div>
-                  ) : (
-                    pendingPayments.map((payment) =>
-                      renderPaymentCard(payment, true)
-                    )
-                  )}
-                </div>
-              </TabPane>
+                    <Badge 
+                      count={paymentCounts.all} 
+                      className="ml-2"
+                      style={{
+                        backgroundColor: activeTab === "all" ? '#3b82f6' : '#6b7280'
+                      }}
+                    />
+                  </button>
 
-              <TabPane
-                tab={
-                  <span>
-                    Confirmed Bookings
-                    <Badge count={verifiedPayments.length} style={{ marginLeft: 8 }} />
-                  </span>
-                }
-                key="verified"
-              >
-                <div className="mt-4">
-                  {verifiedPayments.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                      No confirmed bookings
+                  <button
+                    onClick={() => handleTabChange("pending")}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      activeTab === "pending"
+                        ? "bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300"
+                        : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <ClockCircleOutlined className="text-base" />
+                      <span className="font-medium">Reservations</span>
                     </div>
-                  ) : (
-                    verifiedPayments.map((payment) =>
-                      renderPaymentCard(payment, false)
-                    )
-                  )}
-                </div>
-              </TabPane>
+                    <Badge 
+                      count={paymentCounts.pending} 
+                      className="ml-2"
+                      style={{
+                        backgroundColor: activeTab === "pending" ? '#3b82f6' : '#6b7280'
+                      }}
+                    />
+                  </button>
 
-              <TabPane
-                tab={
-                  <span>
-                    Expired
-                    <Badge count={expiredPayments.length} style={{ marginLeft: 8 }} />
-                  </span>
-                }
-                key="expired"
-              >
-                <div className="mt-4">
-                  {expiredPayments.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                      No expired payments
+                  <button
+                    onClick={() => handleTabChange("verified")}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      activeTab === "verified"
+                        ? "bg-green-50 dark:bg-green-900/30 border-2 border-green-500 dark:border-green-400 text-green-700 dark:text-green-300"
+                        : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <CheckCircleOutlined className="text-base" />
+                      <span className="font-medium">Confirmed</span>
                     </div>
-                  ) : (
-                    expiredPayments.map((payment) =>
-                      renderPaymentCard(payment, false)
-                    )
-                  )}
+                    <Badge 
+                      count={paymentCounts.verified} 
+                      className="ml-2"
+                      style={{
+                        backgroundColor: activeTab === "verified" ? '#10b981' : '#6b7280'
+                      }}
+                    />
+                  </button>
+
+                  <button
+                    onClick={() => handleTabChange("expired")}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      activeTab === "expired"
+                        ? "bg-red-50 dark:bg-red-900/30 border-2 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300"
+                        : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <CloseCircleOutlined className="text-base" />
+                      <span className="font-medium">Expired</span>
+                    </div>
+                    <Badge 
+                      count={paymentCounts.expired} 
+                      className="ml-2"
+                      style={{
+                        backgroundColor: activeTab === "expired" ? '#ef4444' : '#6b7280'
+                      }}
+                    />
+                  </button>
                 </div>
-              </TabPane>
-            </Tabs>
-          )}
+              </div>
+            </div>
+          </div>
 
           {/* Refresh Button */}
           <div className="mt-6 flex justify-end">
             <Button
               icon={<ReloadOutlined />}
-              onClick={fetchPayments}
+              onClick={() => {
+                fetchPayments();
+                fetchPaymentCounts();
+              }}
               loading={loading}
             >
               Refresh

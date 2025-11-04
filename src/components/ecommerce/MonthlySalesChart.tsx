@@ -15,14 +15,22 @@ export default function MonthlySalesChart({ events }) {
     const currentYear = new Date().getFullYear();
     const participantsByMonth = new Array(12).fill(0); // Reset the array
 
-    events.forEach((event) => {
+    // Ensure events is an array
+    const eventsArray = Array.isArray(events) ? events : [];
+
+    eventsArray.forEach((event) => {
+      if (!event || !event.endDate) return;
+      
       const endDate = new Date(event.endDate);
       const eventYear = endDate.getFullYear();
 
       // Only include events from the current year
       if (eventYear === currentYear) {
         const month = endDate.getMonth(); // Get the month (0 = January, 11 = December)
-        participantsByMonth[month] += event.bookedParticipants.length; // Add the count of booked participants
+        const bookedCount = Array.isArray(event.bookedParticipants) 
+          ? event.bookedParticipants.length 
+          : 0;
+        participantsByMonth[month] += bookedCount; // Add the count of booked participants
       }
     });
 

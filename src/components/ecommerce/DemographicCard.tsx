@@ -15,15 +15,22 @@ export default function DemographicCard({ events }) {
     setIsOpen(false);
   }
 
+  // Ensure events is an array
+  const eventsArray = Array.isArray(events) ? events : [];
+
   // Calculate participants per location
-  const locationData = events.reduce((acc, event) => {
+  const locationData = eventsArray.reduce((acc, event) => {
+    if (!event || !event.location) return acc;
+    
     const location = event.location;
-    const participants = event.bookedParticipants.length;
+    const bookedCount = Array.isArray(event.bookedParticipants) 
+      ? event.bookedParticipants.length 
+      : 0;
 
     if (!acc[location]) {
-      acc[location] = participants;
+      acc[location] = bookedCount;
     } else {
-      acc[location] += participants;
+      acc[location] += bookedCount;
     }
 
     return acc;
