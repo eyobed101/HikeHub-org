@@ -49,21 +49,38 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Only refresh if token expires soon
           if (expirationTime - Date.now() < bufferTime) {
             try {
-              const response = await axiosInstance.get('auth/refresh');
+              // Use axios directly instead of axiosInstance to avoid interceptors
+              // This prevents loops where the interceptor tries to refresh before refresh
+              const axios = (await import('axios')).default;
+              const response = await axios.get('/api/v1.0/auth/refresh', {
+                withCredentials: true
+              });
               if (response.data?.token) {
                 sessionStorage.setItem("accessToken", response.data.token);
               }
             } catch (error) {
-              // Refresh failed, clear token
+              // Refresh failed, clear token but don't call logout if already logging out
               sessionStorage.removeItem("accessToken");
-              await performLogout();
+              // Only call logout if not already in progress (prevent loops)
+              try {
+                await performLogout();
+              } catch (logoutError) {
+                // Ignore logout errors to prevent loops
+                console.error('Logout error during auth init:', logoutError);
+              }
             }
           }
         }
       } catch (error) {
-        // Token is invalid, clear it
+        // Token is invalid, clear it but don't call logout if already logging out
         sessionStorage.removeItem("accessToken");
-        await performLogout();
+        // Only call logout if not already in progress (prevent loops)
+        try {
+          await performLogout();
+        } catch (logoutError) {
+          // Ignore logout errors to prevent loops
+          console.error('Logout error during auth init:', logoutError);
+        }
       }
       
       setLoading(false);

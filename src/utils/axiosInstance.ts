@@ -20,10 +20,26 @@ interface DecodedToken extends JwtPayload {
 
 // Track refresh state to prevent concurrent refreshes
 let isRefreshing = false;
+let refreshFailed = false; // Track if refresh has failed to prevent loops
+let isLoggingOut = false; // Track if logout is in progress
 let failedQueue: Array<{
   resolve: (value?: any) => void;
   reject: (reason?: any) => void;
 }> = [];
+
+// Export function to reset refresh failed flag (call after successful login)
+export const resetRefreshFailed = (setLoggingOut: boolean = false) => {
+  refreshFailed = false;
+  isRefreshing = false;
+  if (setLoggingOut) {
+    isLoggingOut = true;
+  } else {
+    isLoggingOut = false;
+  }
+};
+
+// Export function to check if logout is in progress
+export const getIsLoggingOut = () => isLoggingOut;
 
 // Function to process queued requests after token refresh
 const processQueue = (error: any = null, token: string | null = null) => {
@@ -54,6 +70,11 @@ const isTokenExpired = (token: string): boolean => {
 
 // Function to refresh token
 const refreshAccessToken = async (): Promise<string> => {
+  // If refresh has already failed, don't try again
+  if (refreshFailed) {
+    throw new Error("Refresh token has expired. Please log in again.");
+  }
+
   if (isRefreshing) {
     // If already refreshing, wait for it to complete
     return new Promise((resolve, reject) => {
@@ -79,6 +100,7 @@ const refreshAccessToken = async (): Promise<string> => {
     
     const newToken = refreshResponse.data.token;
     sessionStorage.setItem("accessToken", newToken);
+    refreshFailed = false; // Reset failure flag on success
     
     // Process queued requests
     processQueue(null, newToken);
@@ -89,7 +111,11 @@ const refreshAccessToken = async (): Promise<string> => {
     processQueue(error, null);
     
     if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-      performLogout();
+      refreshFailed = true; // Mark refresh as failed to prevent loops
+      if (!isLoggingOut) {
+        isLoggingOut = true;
+        performLogout();
+      }
       throw new Error("Session expired. Please log in again.");
     }
     throw error;
@@ -115,8 +141,21 @@ axiosInstance.interceptors.request.use(
     const token = sessionStorage.getItem("accessToken");
     
     if (!token) {
-      performLogout();
+      // Don't call performLogout here if refresh already failed or logout is in progress to avoid loops
+      if (!refreshFailed && !isLoggingOut) {
+        isLoggingOut = true;
+        performLogout();
+      }
       throw new Error("No access token found. Please log in.");
+    }
+
+    // Don't try to refresh if refresh has already failed or logout is in progress
+    if (refreshFailed || isLoggingOut) {
+      if (!isLoggingOut) {
+        isLoggingOut = true;
+        performLogout();
+      }
+      throw new Error("Session expired. Please log in again.");
     }
 
     // Check if token is expired or about to expire (with 5 minute buffer)
@@ -127,8 +166,13 @@ axiosInstance.interceptors.request.use(
           config.headers.Authorization = `Bearer ${newToken}`;
         }
       } catch (error: unknown) {
-        if (error instanceof Error && error.message === "Session expired. Please log in again.") {
-          message.error(error.message);
+        // If refresh failed, don't throw again - let response interceptor handle it
+        if (error instanceof Error) {
+          if (error.message === "Session expired. Please log in again." || error.message === "Refresh token has expired. Please log in again.") {
+            // Don't throw here, let the request proceed and the response interceptor will handle the 401
+            // This prevents loops where request interceptor throws and response interceptor tries to refresh again
+            return config;
+          }
         }
         throw error;
       }
@@ -151,13 +195,26 @@ axiosInstance.interceptors.response.use(
 
     // Don't retry refresh endpoint
     if (originalRequest?.url?.includes('auth/refresh')) {
-      performLogout();
+      if (!isLoggingOut) {
+        isLoggingOut = true;
+        performLogout();
+      }
       return Promise.reject(error);
     }
 
     // Handle 401 Unauthorized - token expired or invalid
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
+
+      // Don't retry if refresh has already failed or logout is in progress
+      if (refreshFailed || isLoggingOut) {
+        if (!isLoggingOut) {
+          isLoggingOut = true;
+          performLogout();
+        }
+        message.error("Your session has expired. Please log in again.");
+        return Promise.reject(error);
+      }
 
       try {
         // Try to refresh the token
@@ -172,7 +229,11 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         // Refresh failed, logout user
-        performLogout();
+        refreshFailed = true; // Mark refresh as failed
+        if (!isLoggingOut) {
+          isLoggingOut = true;
+          performLogout();
+        }
         message.error("Your session has expired. Please log in again.");
         return Promise.reject(refreshError);
       }

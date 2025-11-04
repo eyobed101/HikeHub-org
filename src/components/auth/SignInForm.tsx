@@ -6,7 +6,7 @@ import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/Button/Button";
 import { useDispatch } from "react-redux";
 import { login } from "../../store/authSlice";
-import axiosInstance from "../../utils/axiosInstance"; // Import axios instance
+import axiosInstance, { resetRefreshFailed } from "../../utils/axiosInstance"; // Import axios instance
 import { Link, useNavigate } from "react-router";
 
 
@@ -36,6 +36,8 @@ export default function SignInForm() {
 
         const token = response.data.token;
 
+        // Reset refresh failed flag on successful login
+        resetRefreshFailed();
 
         dispatch(login(response.data._id)); // Dispatch the login action with user data
         sessionStorage.setItem("accessToken", token); // Store user data in session storage
