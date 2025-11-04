@@ -5,51 +5,13 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 
-export default function MonthlyTarget({ events }) {
-  const [progress, setProgress] = useState(0); // Progress percentage
-  const [currentMonthRevenue, setCurrentMonthRevenue] = useState(0); // Revenue for the current month
-  const [targetRevenue, setTargetRevenue] = useState(0); // Target revenue for the current month
+interface MonthlyTargetProps {
+  currentMonthRevenue: number;
+  targetRevenue: number;
+  progress: number;
+}
 
-  useEffect(() => {
-    const currentMonth = new Date().getMonth(); // Get the current month (0 = January, 11 = December)
-    const currentYear = new Date().getFullYear(); // Get the current year
-
-    let revenue = 0;
-    let target = 0;
-
-    // Ensure events is an array
-    const eventsArray = Array.isArray(events) ? events : [];
-
-    console.log("Events:", eventsArray);
-
-    // Loop through all events to calculate revenue and target for the current month
-    eventsArray.forEach((event) => {
-      if (!event || !event.endDate) return;
-      
-      const endDate = new Date(event.endDate);
-      const eventMonth = endDate.getMonth();
-      const eventYear = endDate.getFullYear();
-
-      if (eventMonth === currentMonth && eventYear === currentYear) {
-        // Revenue = price * bookedParticipants.length
-        const bookedCount = Array.isArray(event.bookedParticipants) 
-          ? event.bookedParticipants.length 
-          : 0;
-        revenue += (event.price || 0) * bookedCount;
-
-        // Target = price * maxParticipants
-        target += (event.price || 0) * (event.maxParticipants || 0);
-      }
-    });
-
-    setCurrentMonthRevenue(revenue);
-    setTargetRevenue(target);
-
-    // Calculate progress percentage
-    const progressPercentage = target > 0 ? Math.min((revenue / target) * 100, 100) : 0; // Cap at 100%
-    setProgress(progressPercentage);
-  }, [events]);
-
+export default function MonthlyTarget({ currentMonthRevenue, targetRevenue, progress }: MonthlyTargetProps) {
   const series = [progress]; // Progress percentage for the radial chart
   const options: ApexOptions = {
     colors: ["#465FFF"],

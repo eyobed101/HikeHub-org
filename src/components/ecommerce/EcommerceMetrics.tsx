@@ -6,37 +6,45 @@ import {
 } from "../../icons";
 import Badge from "../ui/badge/Badge";
 
-export default function EcommerceMetrics({ organizerDetails }) {
+interface MetricsProps {
+  metrics: {
+    totalParticipants: number;
+    totalRevenue: number;
+    activeEvents: number;
+    totalEvents: number;
+  };
+}
+
+export default function EcommerceMetrics({ metrics }: MetricsProps) {
+  if (!metrics) return null;
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
+      {/* Total Participants */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+          <GroupIcon className="text-blue-600 dark:text-blue-400 size-6" />
         </div>
-
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Total Participants
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {organizerDetails.totalParticipants}
+              {metrics.totalParticipants.toLocaleString()}
             </h4>
           </div>
           <Badge color="success">
             <ArrowUpIcon />
-            {/* Example percentage change */}
-            5.2%
+            Active
           </Badge>
         </div>
       </div>
-      {/* <!-- Metric Item End --> */}
 
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+      {/* Total Revenue */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl">
+          <BoxIconLine className="text-green-600 dark:text-green-400 size-6" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
@@ -44,47 +52,41 @@ export default function EcommerceMetrics({ organizerDetails }) {
               Total Revenue
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {organizerDetails.totalRevenue.toFixed(2)} ETB
+              {metrics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
             </h4>
           </div>
-
-          <Badge color="error">
-            <ArrowDownIcon />
-            {/* Example percentage change */}
-            3.8%
+          <Badge color="success">
+            <ArrowUpIcon />
+            Verified
           </Badge>
         </div>
       </div>
-      {/* <!-- Metric Item End --> */}
 
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
+      {/* Active Events */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+          <GroupIcon className="text-purple-600 dark:text-purple-400 size-6" />
         </div>
-
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Active Events
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {organizerDetails.activeEvents}
+              {metrics.activeEvents}
             </h4>
           </div>
           <Badge color="success">
             <ArrowUpIcon />
-            {/* Example percentage change */}
-            7.1%
+            Ongoing
           </Badge>
         </div>
       </div>
-      {/* <!-- Metric Item End --> */}
 
-      {/* <!-- Metric Item Start --> */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+      {/* Total Events */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+          <BoxIconLine className="text-orange-600 dark:text-orange-400 size-6" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
@@ -92,18 +94,15 @@ export default function EcommerceMetrics({ organizerDetails }) {
               Total Events
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {organizerDetails.totalEvents}
+              {metrics.totalEvents}
             </h4>
           </div>
-
           <Badge color="success">
             <ArrowUpIcon />
-            {/* Example percentage change */}
-            4.5%
+            All Time
           </Badge>
         </div>
       </div>
-      {/* <!-- Metric Item End --> */}
     </div>
   );
 }

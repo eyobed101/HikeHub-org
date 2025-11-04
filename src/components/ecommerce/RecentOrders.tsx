@@ -6,20 +6,22 @@ import {
   TableRow,
 } from "../ui/table";
 
-export default function RecentOrders({ events }) {
-  // Ensure events is an array
-  const eventsArray = Array.isArray(events) ? events : [];
-  
-  // Sort events by engagement and likes, then take the top 5
-  const topEvents = eventsArray
-    .sort(
-      (a, b) => {
-        const aParticipants = Array.isArray(a.bookedParticipants) ? a.bookedParticipants.length : 0;
-        const bParticipants = Array.isArray(b.bookedParticipants) ? b.bookedParticipants.length : 0;
-        return (bParticipants + (b.numberOfLikes || 0)) - (aParticipants + (a.numberOfLikes || 0));
-      }
-    )
-    .slice(0, 5); // Take the top 5 events
+interface TopEvent {
+  _id: string;
+  title: string;
+  location: string;
+  type: string;
+  multimedia: string[];
+  participants: number;
+  likes: number;
+}
+
+interface RecentOrdersProps {
+  topEvents: TopEvent[];
+}
+
+export default function RecentOrders({ topEvents }: RecentOrdersProps) {
+  const eventsArray = Array.isArray(topEvents) ? topEvents : [];
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
@@ -70,7 +72,7 @@ export default function RecentOrders({ events }) {
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {topEvents.map((event) => (
+            {eventsArray.map((event) => (
               <TableRow key={event._id}>
                 <TableCell className="py-3">
                   <div className="flex items-center gap-3">
@@ -87,9 +89,14 @@ export default function RecentOrders({ events }) {
                 <TableCell className="py-3">
                   {event.multimedia && event.multimedia.length > 0 ? (
                     <img
-                      src={event.multimedia[0]}
+                      src={event.multimedia[0].startsWith('http') 
+                        ? event.multimedia[0] 
+                        : `/uploads/${event.multimedia[0]}`}
                       alt={event.title}
                       className="w-16 h-16 rounded-md object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '/placeholder-image.png';
+                      }}
                     />
                   ) : (
                     <span className="text-gray-500 text-theme-xs dark:text-gray-400">
@@ -101,10 +108,10 @@ export default function RecentOrders({ events }) {
                   {event.location}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {Array.isArray(event.bookedParticipants) ? event.bookedParticipants.length : 0}
+                  {event.participants || 0}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {event.numberOfLikes}
+                  {event.likes || 0}
                 </TableCell>
               </TableRow>
             ))}

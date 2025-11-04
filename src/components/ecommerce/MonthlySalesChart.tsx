@@ -1,41 +1,17 @@
+import { useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
-import { useState, useEffect } from "react";
 
-export default function MonthlySalesChart({ events }) {
-  const [monthlyParticipants, setMonthlyParticipants] = useState(
-    new Array(12).fill(0) // Initialize an array with 12 zeros for each month
-  );
+interface MonthlySalesChartProps {
+  monthlyParticipants: number[];
+}
 
-  useEffect(() => {
-    // Get the most recent year from the events
-    const currentYear = new Date().getFullYear();
-    const participantsByMonth = new Array(12).fill(0); // Reset the array
-
-    // Ensure events is an array
-    const eventsArray = Array.isArray(events) ? events : [];
-
-    eventsArray.forEach((event) => {
-      if (!event || !event.endDate) return;
-      
-      const endDate = new Date(event.endDate);
-      const eventYear = endDate.getFullYear();
-
-      // Only include events from the current year
-      if (eventYear === currentYear) {
-        const month = endDate.getMonth(); // Get the month (0 = January, 11 = December)
-        const bookedCount = Array.isArray(event.bookedParticipants) 
-          ? event.bookedParticipants.length 
-          : 0;
-        participantsByMonth[month] += bookedCount; // Add the count of booked participants
-      }
-    });
-
-    setMonthlyParticipants(participantsByMonth);
-  }, [events]);
+export default function MonthlySalesChart({ monthlyParticipants }: MonthlySalesChartProps) {
+  // Use the data directly from props (already processed on backend)
+  const participantsData = Array.isArray(monthlyParticipants) ? monthlyParticipants : new Array(12).fill(0);
 
   const options: ApexOptions = {
     colors: ["#465fff"],
@@ -119,7 +95,7 @@ export default function MonthlySalesChart({ events }) {
   const series = [
     {
       name: "Participants",
-      data: monthlyParticipants, // Use the calculated participants data
+      data: participantsData,
     },
   ];
 

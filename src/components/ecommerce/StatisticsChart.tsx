@@ -3,56 +3,35 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import ChartTab from "../common/ChartTab";
 
-export default function StatisticsChart({ events }) {
+interface StatisticsChartProps {
+  monthlyParticipants: number[];
+  monthlyRevenue: number[];
+  quarterlyParticipants: number[];
+  quarterlyRevenue: number[];
+  annualParticipants: number;
+  annualRevenue: number;
+}
+
+export default function StatisticsChart({ 
+  monthlyParticipants = [],
+  monthlyRevenue = [],
+  quarterlyParticipants = [],
+  quarterlyRevenue = [],
+  annualParticipants = 0,
+  annualRevenue = 0
+}: StatisticsChartProps) {
   const [filter, setFilter] = useState("Monthly"); // State to track the selected filter
 
-  // Ensure events is an array
-  const eventsArray = Array.isArray(events) ? events : [];
-
-  // Initialize arrays for participants and revenue
-  const monthlyParticipants = new Array(12).fill(0);
-  const monthlyRevenue = new Array(12).fill(0);
-
-  // Process the events to calculate monthly statistics
-  eventsArray.forEach((event) => {
-    if (!event || !event.endDate) return;
-    
-    const endDate = new Date(event.endDate);
-    const month = endDate.getMonth(); // Get the month (0 = January, 11 = December)
-
-    // Add the number of booked participants to the corresponding month
-    const bookedCount = Array.isArray(event.bookedParticipants) 
-      ? event.bookedParticipants.length 
-      : 0;
-    monthlyParticipants[month] += bookedCount;
-
-    // Add the revenue (price * booked participants) to the corresponding month
-    monthlyRevenue[month] += (event.price || 0) * bookedCount;
-  });
-
-  // Calculate quarterly data
-  const quarterlyParticipants = [
-    monthlyParticipants.slice(0, 3).reduce((a, b) => a + b, 0), // Q1
-    monthlyParticipants.slice(3, 6).reduce((a, b) => a + b, 0), // Q2
-    monthlyParticipants.slice(6, 9).reduce((a, b) => a + b, 0), // Q3
-    monthlyParticipants.slice(9, 12).reduce((a, b) => a + b, 0), // Q4
-  ];
-
-  const quarterlyRevenue = [
-    monthlyRevenue.slice(0, 3).reduce((a, b) => a + b, 0), // Q1
-    monthlyRevenue.slice(3, 6).reduce((a, b) => a + b, 0), // Q2
-    monthlyRevenue.slice(6, 9).reduce((a, b) => a + b, 0), // Q3
-    monthlyRevenue.slice(9, 12).reduce((a, b) => a + b, 0), // Q4
-  ];
-
-  // Calculate annual data
-  const annualParticipants = monthlyParticipants.reduce((a, b) => a + b, 0);
-  const annualRevenue = monthlyRevenue.reduce((a, b) => a + b, 0);
+  // Use data directly from props (already processed on backend)
+  const participantsData = Array.isArray(monthlyParticipants) ? monthlyParticipants : new Array(12).fill(0);
+  const revenueData = Array.isArray(monthlyRevenue) ? monthlyRevenue : new Array(12).fill(0);
+  const quarterlyParticipantsData = Array.isArray(quarterlyParticipants) ? quarterlyParticipants : [0, 0, 0, 0];
+  const quarterlyRevenueData = Array.isArray(quarterlyRevenue) ? quarterlyRevenue : [0, 0, 0, 0];
 
   // Determine the data to display based on the selected filter
-  let categories = [];
-  let participantsData = [];
-  let revenueData = [];
+  let categories: string[] = [];
+  let displayParticipantsData: number[] = [];
+  let displayRevenueData: number[] = [];
 
   if (filter === "Monthly") {
     categories = [
@@ -69,16 +48,16 @@ export default function StatisticsChart({ events }) {
       "Nov",
       "Dec",
     ];
-    participantsData = monthlyParticipants;
-    revenueData = monthlyRevenue;
+    displayParticipantsData = participantsData;
+    displayRevenueData = revenueData;
   } else if (filter === "Quarterly") {
     categories = ["Q1", "Q2", "Q3", "Q4"];
-    participantsData = quarterlyParticipants;
-    revenueData = quarterlyRevenue;
+    displayParticipantsData = quarterlyParticipantsData;
+    displayRevenueData = quarterlyRevenueData;
   } else if (filter === "Annually") {
     categories = ["Annual"];
-    participantsData = [annualParticipants];
-    revenueData = [annualRevenue];
+    displayParticipantsData = [annualParticipants];
+    displayRevenueData = [annualRevenue];
   }
 
   const options: ApexOptions = {
@@ -168,11 +147,11 @@ export default function StatisticsChart({ events }) {
   const series = [
     {
       name: "Participants",
-      data: participantsData,
+      data: displayParticipantsData,
     },
     {
       name: "Revenue",
-      data: revenueData,
+      data: displayRevenueData,
     },
   ];
 
