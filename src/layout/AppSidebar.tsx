@@ -3,20 +3,17 @@ import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
 import {
-  BoxCubeIcon,
-  CalenderIcon,
+
   
   ChatIcon,
   
   ChevronDownIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
+
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -43,6 +40,11 @@ const navItems: NavItem[] = [
     icon: <ListIcon />,
     name: "Events",
     path: "/events",
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Manage Participants",
+    path: "/manage-participants",
   },
   {
     icon: <PageIcon />,

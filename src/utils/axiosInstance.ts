@@ -3,7 +3,8 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import { performLogout } from "./logout";
 import { message } from 'antd';
 
-const BASE_URL = "https://hikeapi.issipeteta.net/api/v1.0/";
+// Use proxy path in development to avoid CORS issues
+const BASE_URL = "/api/v1.0/";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -61,7 +62,14 @@ const refreshAccessToken = async (): Promise<string> => {
 // Request Interceptor
 axiosInstance.interceptors.request.use(
   async (config) => {
-    if (config.url?.includes('auth/refresh')) {
+    // List of endpoints that don't require authentication
+    const publicEndpoints = ['auth/login', 'auth/register', 'auth/refresh', 'auth/signup', 'auth/signin'];
+    
+    // Check if this is a public endpoint
+    const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+    
+    // Skip token check for public endpoints
+    if (isPublicEndpoint) {
       return config;
     }
 
@@ -77,15 +85,19 @@ axiosInstance.interceptors.request.use(
       try {
         const newToken = await refreshAccessToken();
         sessionStorage.setItem("accessToken", newToken);
-        config.headers.Authorization = `Bearer ${newToken}`;
-      } catch (error) {
-        if (error.message === "Session expired. Please log in again.") {
+        if (config.headers) {
+          config.headers.Authorization = `Bearer ${newToken}`;
+        }
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message === "Session expired. Please log in again.") {
           message.error(error.message);
         }
         throw error;
       }
     } else {
-      config.headers.Authorization = `Bearer ${token}`;
+      if (config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     return config;

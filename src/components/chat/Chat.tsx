@@ -5,7 +5,13 @@ import io from 'socket.io-client';
 import axiosInstance from "../../utils/axiosInstance";
 import { useSelector } from "react-redux";
 
-const socket = io('https://hikeapi.issipeteta.net/api/v1.0/');
+// Use direct connection for Socket.IO (proxy doesn't work well with Socket.IO)
+// Socket.IO needs to connect directly to the backend server
+const socket = io('http://localhost:3030', {
+  path: '/socket.io/',
+  transports: ['websocket', 'polling'],
+  autoConnect: false,
+});
 
 const Chat: React.FC = () => {
   const [messages, setMessages] = useState([]);

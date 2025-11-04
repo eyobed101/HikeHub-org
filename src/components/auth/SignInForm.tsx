@@ -6,11 +6,8 @@ import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/Button/Button";
 import { useDispatch } from "react-redux";
 import { login } from "../../store/authSlice";
-// import axiosInstance from "../../utils/axiosInstance"; // Import axios instance
+import axiosInstance from "../../utils/axiosInstance"; // Import axios instance
 import { Link, useNavigate } from "react-router";
-import axios from "axios";
-
-const BASE_URL = 'https://hikeapi.issipeteta.net/api/v1.0/';
 
 
 export default function SignInForm() {
@@ -24,20 +21,15 @@ export default function SignInForm() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post<{
+      const response = await axiosInstance.post<{
         user: any;
         token: string;
+        _id: string;
       }>(
-        `${BASE_URL}auth/login`,
+        'auth/login',
         {
           email,
           password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
         }
       );
       if (response.status === 200) {
@@ -51,7 +43,19 @@ export default function SignInForm() {
         navigate("/home"); // Redirect to the dashboard or desired route
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Login failed with response:", error.response.data);
+        console.error("Status code:", error.response.status);
+        console.error("Headers:", error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("Login failed with no response:", error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Login failed with error:", error.message);
+      }
       // alert("Invalid email or password. Please try again.");
     }
   };

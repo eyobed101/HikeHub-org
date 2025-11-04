@@ -61,7 +61,7 @@ export default function UserDropdown() {
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
           <img
-            src={`https://hikeapi.issipeteta.net/uploads/${userData.logo}`}
+            src={`http://localhost:3030/uploads/${userData.logo}`}
             alt="User"
             className="object-cover w-full h-full"
           />

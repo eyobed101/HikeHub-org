@@ -16,11 +16,26 @@ export default defineConfig({
     }),
   ],
   server: {
-    https: {
-      key: './cert.key',         // Path to your private key
-      cert: './cert.crt'        // Path to your certificate
-    },
     host: 'localhost',          // Ensure it runs on localhost
-    port: 3000                  // Optional: Custom port
+    port: 3000,                 // Optional: Custom port
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3030',
+        changeOrigin: true,
+        secure: false,
+        ws: true, // Enable WebSocket proxying for Socket.IO
+      },
+      '/socket.io': {
+        target: 'http://localhost:3030',
+        changeOrigin: true,
+        secure: false,
+        ws: true, // Enable WebSocket proxying for Socket.IO
+      },
+      '/uploads': {
+        target: 'http://localhost:3030',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   }
 });

@@ -19,6 +19,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import EventsTable from "./pages/Events/EventsTable";
+import ManageParticipants from "./pages/Events/ManageParticipants";
 import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
 import ChatPage from "./pages/ChatPage/chat";
@@ -27,6 +28,7 @@ const protectedRoutes = [
   { path: "/", element: <Home /> },
   { path: "/home", element: <Home /> },
   { path: "/events", element: <EventsTable /> },
+  { path: "/manage-participants", element: <ManageParticipants /> },
   { path: "/profile", element: <UserProfiles /> },
   { path: "/calendar", element: <Calendar /> },
   { path: "/blank", element: <Blank /> },
