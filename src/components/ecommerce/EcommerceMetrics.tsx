@@ -15,6 +15,18 @@ interface MetricsProps {
   };
 }
 
+// Utility function to format numbers with "+" for values >= 10,000 (5 figures)
+// Always returns integers (no decimals)
+const formatNumber = (value: number): string => {
+  const integerValue = Math.round(value);
+  
+  if (integerValue >= 10000) {
+    return integerValue.toLocaleString('en-US') + '+';
+  }
+  
+  return integerValue.toLocaleString('en-US');
+};
+
 export default function EcommerceMetrics({ metrics }: MetricsProps) {
   if (!metrics) return null;
 
@@ -31,7 +43,7 @@ export default function EcommerceMetrics({ metrics }: MetricsProps) {
               Total Participants
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {metrics.totalParticipants.toLocaleString()}
+              {formatNumber(metrics.totalParticipants)}
             </h4>
           </div>
           <Badge color="success">
@@ -52,7 +64,7 @@ export default function EcommerceMetrics({ metrics }: MetricsProps) {
               Total Revenue
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {metrics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
+              {formatNumber(metrics.totalRevenue)} ETB
             </h4>
           </div>
           <Badge color="success">
@@ -73,7 +85,7 @@ export default function EcommerceMetrics({ metrics }: MetricsProps) {
               Active Events
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {metrics.activeEvents}
+              {formatNumber(metrics.activeEvents)}
             </h4>
           </div>
           <Badge color="success">
@@ -94,7 +106,7 @@ export default function EcommerceMetrics({ metrics }: MetricsProps) {
               Total Events
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {metrics.totalEvents}
+              {formatNumber(metrics.totalEvents)}
             </h4>
           </div>
           <Badge color="success">

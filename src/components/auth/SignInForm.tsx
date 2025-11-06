@@ -25,6 +25,8 @@ export default function SignInForm() {
         user: any;
         token: string;
         _id: string;
+        role?: string;
+        organizerStatus?: string;
       }>(
         'auth/login',
         {
@@ -41,6 +43,11 @@ export default function SignInForm() {
 
         dispatch(login(response.data._id)); // Dispatch the login action with user data
         sessionStorage.setItem("accessToken", token); // Store user data in session storage
+        
+        // Store organizer status if user is EventOrganizer
+        if (response.data.role === 'EventOrganizer' && response.data.organizerStatus) {
+          sessionStorage.setItem("organizerStatus", response.data.organizerStatus);
+        }
 
         navigate("/home"); // Redirect to the dashboard or desired route
       }

@@ -28,6 +28,7 @@ import "swiper/css/pagination";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Spin } from "antd";
+import { shortenUrl, isValidUrl, formatUrl } from "../../../utils/urlShortener";
 
 interface Event {
   _id: string;
@@ -43,7 +44,7 @@ interface Event {
   images: string[];
 }
 
-export default function EventTable({ tableData }: { tableData: Event[] }) {
+export default function EventTable({ tableData, organizerStatus }: { tableData: Event[]; organizerStatus?: string | null }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categories, setCategories] = useState<{ _id: string; name: string }[]>([]); // State for categories
   const [viewEvent, setViewEvent] = useState<Event | null>(null); // State to hold the event to view
@@ -209,6 +210,12 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
   };
 
   const handleAddNewEvent = () => {
+    // Check if profile is approved before allowing event creation
+    if (organizerStatus && organizerStatus !== 'Approved') {
+      toast.error("Your profile is not approved. Please complete your profile before creating events.");
+      return;
+    }
+    
     setFormData({
       _id: "",  // Clear the form data
       title: "",
@@ -278,36 +285,57 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
 
           toast.error("Failed to update event. Please try again.");
         }
-      } else {
-        // Otherwise, create a new event
-        const response = await axiosInstance.post("event/create", formDataToSend,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        if (response.status === 201) {
-          setRefresh(!refersh); // Trigger refersh
-
-          console.log("Event created successfully:", response.data);
-          setIsModalOpen(false);
-
-          toast.success("Event created successfully!");
         } else {
-          setIsModalOpen(false);
+          // Otherwise, create a new event
+          const response = await axiosInstance.post("event/create", formDataToSend,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
 
-          console.error("Failed to create event:", response.data);
-          toast.error("Failed to create event. Please try again.");
+          if (response.status === 201) {
+            setRefresh(!refersh); // Trigger refersh
+
+            console.log("Event created successfully:", response.data);
+            setIsModalOpen(false);
+
+            toast.success("Event created successfully!");
+            
+            // Refresh organizer status after successful event creation
+            try {
+              const orgResponse = await axiosInstance.get("auth/organizer/detail");
+              if (orgResponse.data?.status) {
+                sessionStorage.setItem("organizerStatus", orgResponse.data.status);
+              }
+            } catch (err) {
+              console.error("Error refreshing organizer status:", err);
+            }
+          } else {
+            setIsModalOpen(false);
+
+            console.error("Failed to create event:", response.data);
+            toast.error("Failed to create event. Please try again.");
+          }
         }
+      } catch (error: any) {
+        setIsModalOpen(false);
+        console.error("Error creating event:", error);
+        
+        // Handle profile not approved error
+        if (error.response?.data?.businessErrorCode === 'PROFILE_NOT_APPROVED') {
+          toast.error(error.response.data.message || "Your profile is not approved. Please complete your profile.");
+          // Update organizer status in sessionStorage
+          if (error.response.data.organizerStatus) {
+            sessionStorage.setItem("organizerStatus", error.response.data.organizerStatus);
+          }
+        } else {
+          toast.error(error.response?.data?.message || "An error occurred while creating the event. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error creating event:", error);
-      toast.error("An error occurred while creating the event. Please try again.");
-    } finally {
-      setLoading(false); // Set loading to false
-    }
   };
 
   const handleEditEvent = (event: Event) => {
@@ -377,8 +405,20 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
                   <TableCell className="px-5 py-4 text-gray-800 dark:text-gray-400">
                     {event.title}
                   </TableCell>
-                  <TableCell className="px-5 py-4 text-blue-500 hover:underline">
-                    {event.location}
+                  <TableCell className="px-5 py-4">
+                    {isValidUrl(event.location) ? (
+                      <a
+                        href={formatUrl(event.location)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-700 hover:underline cursor-pointer transition-colors"
+                        title={event.location}
+                      >
+                        {shortenUrl(event.location, 40)}
+                      </a>
+                    ) : (
+                      <span className="text-gray-800 dark:text-gray-400">{event.location}</span>
+                    )}
                   </TableCell>
                   <TableCell className="px-5 py-4 text-gray-800 dark:text-gray-400">
                     {event.distance}
@@ -785,7 +825,19 @@ export default function EventTable({ tableData }: { tableData: Event[] }) {
                 </div>
                 <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
                   <Label>Location</Label>
-                  <p className="text-gray-800 dark:text-white/90">{viewEvent.location}</p>
+                  {isValidUrl(viewEvent.location) ? (
+                    <a
+                      href={formatUrl(viewEvent.location)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-700 hover:underline cursor-pointer transition-colors break-all"
+                      title={viewEvent.location}
+                    >
+                      {shortenUrl(viewEvent.location, 60)}
+                    </a>
+                  ) : (
+                    <p className="text-gray-800 dark:text-white/90">{viewEvent.location}</p>
+                  )}
                 </div>
                 <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700">
                   <Label>Distance</Label>

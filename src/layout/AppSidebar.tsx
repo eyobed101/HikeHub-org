@@ -3,9 +3,6 @@ import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
 import {
-
-  
-  ChatIcon,
   
   ChevronDownIcon,
   GridIcon,
@@ -50,12 +47,6 @@ const navItems: NavItem[] = [
     icon: <PageIcon />,
     name: "Profile",
     path: "/profile",
-  },
-  {
-    name: "Chat",
-    icon: <ChatIcon />,
-    path: "/chat",
-
   },
   // {
   //   name: "Tables",

@@ -1,15 +1,63 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import axiosInstance from "../../utils/axiosInstance";
-import { Spin } from "antd"; // Import Spin from Ant Design or any spinner component you use
+import { Spin, message, Alert, Select, Tag } from "antd";
+import { 
+  PlusOutlined, 
+  EditOutlined, 
+  DeleteOutlined, 
+  ExclamationCircleOutlined 
+} from "@ant-design/icons";
 
+
+interface BankAccount {
+  _id: string;
+  bankTemplate: {
+    _id: string;
+    bankName: string;
+    bankCode?: string;
+    swiftCode?: string;
+    accountTypes: string[];
+  };
+  firstname: string;
+  lastname: string;
+  accountNumber: string;
+  accountHolderName: string;
+  accountType: string;
+  branchName?: string;
+  swiftCode?: string;
+  isDefault: boolean;
+  isActive: boolean;
+}
+
+interface BankTemplate {
+  _id: string;
+  bankName: string;
+  bankCode?: string;
+  swiftCode?: string;
+  accountTypes: string[];
+  isActive: boolean;
+}
+
+interface ProfileCompletion {
+  isComplete: boolean;
+  requiredFields: {
+    companyName: string | null;
+    bankAccount: BankAccount | null;
+    firstname: string | null;
+    lastname: string | null;
+  };
+  missingFields: string[];
+  message: string;
+}
 
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen: isBankModalOpen, openModal: openBankModal, closeModal: closeBankModal } = useModal();
   const [organizerDetails, setOrganizerDetails] = useState({
     organizer: { username: "", email: "" },
     phone_number: "",
@@ -25,20 +73,76 @@ export default function UserMetaCard() {
     logo: "",
     status: "",
   });
-  const [profileCompletion, setProfileCompletion] = useState(0);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [bankTemplates, setBankTemplates] = useState<BankTemplate[]>([]);
+  const [profileCompletion, setProfileCompletion] = useState<ProfileCompletion | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
+  const [bankLoading, setBankLoading] = useState(false);
+  
+  // Bank account form state
+  const [bankFormData, setBankFormData] = useState({
+    bankTemplateId: "",
+    firstname: "",
+    lastname: "",
+    accountNumber: "",
+    accountHolderName: "",
+    accountType: "Checking",
+    branchName: "",
+    swiftCode: "",
+    isDefault: false,
+  });
+  const [editingBankAccount, setEditingBankAccount] = useState<BankAccount | null>(null);
 
+
+  // Fetch bank templates
+  const fetchBankTemplates = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get("bank-accounts/templates") as any;
+      if (response.data?.data) {
+        setBankTemplates(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching bank templates:", error);
+    }
+  }, []);
+
+  // Fetch bank accounts
+  const fetchBankAccounts = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get("bank-accounts") as any;
+      if (response.data?.data) {
+        setBankAccounts(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching bank accounts:", error);
+    }
+  }, []);
+
+  // Fetch profile completion status
+  const fetchProfileCompletion = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get("bank-accounts/profile-completion") as any;
+      setProfileCompletion(response.data as ProfileCompletion);
+    } catch (error) {
+      console.error("Error fetching profile completion:", error);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchOrganizerDetails = async () => {
       try {
-        setLoading(true); // Set loading to true before fetching data
+        setLoading(true);
 
-        const response = await axiosInstance.get("auth/organizer/detail");
-        const data = response.data; // Assuming the first object is the relevant one
+        const [orgResponse, bankResponse, bankTemplatesResponse, completionResponse] = await Promise.all([
+          axiosInstance.get("auth/organizer/detail") as any,
+          (axiosInstance.get("bank-accounts").catch(() => ({ data: { data: [] } })) as any),
+          (axiosInstance.get("bank-accounts/templates").catch(() => ({ data: { data: [] } })) as any),
+          (axiosInstance.get("bank-accounts/profile-completion").catch(() => ({ data: {} })) as any)
+        ]);
+
+        const data = orgResponse.data as any;
         if (data) {
-          console.log("Organizer details:", data);
           setOrganizerDetails({
             organizer: {
               username: data.organizer?.username || "",
@@ -57,46 +161,43 @@ export default function UserMetaCard() {
             logo: data.logo || "",
             status: data.status || "",
           });
-          calculateProfileCompletion(data);
+        }
+
+        // Set bank accounts
+        if (bankResponse.data?.data) {
+          setBankAccounts(bankResponse.data.data);
+        }
+
+        // Set bank templates
+        if (bankTemplatesResponse.data?.data) {
+          setBankTemplates(bankTemplatesResponse.data.data);
+        }
+
+        // Set profile completion
+        if (completionResponse.data) {
+          setProfileCompletion(completionResponse.data as ProfileCompletion);
         }
       } catch (error) {
         console.error("Error fetching organizer details:", error);
-      }finally {
-        setLoading(false); // Set loading to false after fetching data
+      } finally {
+        setLoading(false);
       }
-    };
-
-    const calculateProfileCompletion = (data: any) => {
-      const totalFields = 9;
-      const filledFields = [
-        data.phone_number,
-        data.city,
-        data.address,
-        String(data.tripsOrganizedBefore),
-        data.companyDescription,
-        data.RegistrationNumber,
-        data.tinNo,
-        data.companyName,
-        data.logo,
-      ].filter((field) => field && field.trim() !== "").length;
-
-      setProfileCompletion(Math.round((filledFields / totalFields) * 100));
     };
 
     fetchOrganizerDetails();
   }, []);
 
   const handleSave = async () => {
-    setLoading(true); // Set loading to true before fetching data
-
+    setLoading(true);
     closeModal();
     try {
+      // Update organizer details
       const formData = new FormData();
       formData.append("phone_number", organizerDetails.phone_number);
       formData.append("city", organizerDetails.city);
       formData.append("address", organizerDetails.address);
       formData.append("companyDescription", organizerDetails.companyDescription);
-      formData.append("tripsOrganizedBefore", organizerDetails.tripsOrganizedBefore);
+      formData.append("tripsOrganizedBefore", organizerDetails.tripsOrganizedBefore.toString());
       formData.append("heardAboutUs", organizerDetails.heardAboutUs);
       formData.append("RegistrationNumber", organizerDetails.RegistrationNumber);
       formData.append("tinNo", organizerDetails.tinNo);
@@ -111,14 +212,94 @@ export default function UserMetaCard() {
         },
       });
 
-      console.log("Organizer details updated successfully!");
-    } catch (error) {
+      message.success("Profile updated successfully!");
+      
+      // Refresh data
+      await Promise.all([fetchBankAccounts(), fetchBankTemplates(), fetchProfileCompletion()]);
+    } catch (error: any) {
       console.error("Error updating organizer details:", error);
+      message.error(error.response?.data?.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
     }
-    finally {
-      setLoading(false); // Set loading to false after fetching data
+  };
+
+  // Bank account handlers
+  const handleCreateBankAccount = async () => {
+    try {
+      setBankLoading(true);
+      await axiosInstance.post("bank-accounts", bankFormData);
+      message.success("Bank account added successfully!");
+      closeBankModal();
+      resetBankForm();
+      await Promise.all([fetchBankAccounts(), fetchBankTemplates(), fetchProfileCompletion()]);
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Failed to add bank account");
+    } finally {
+      setBankLoading(false);
     }
-    closeModal();
+  };
+
+  const handleUpdateBankAccount = async () => {
+    if (!editingBankAccount) return;
+    try {
+      setBankLoading(true);
+      await axiosInstance.put(`bank-accounts/${editingBankAccount._id}`, bankFormData);
+      message.success("Bank account updated successfully!");
+      closeBankModal();
+      resetBankForm();
+      await Promise.all([fetchBankAccounts(), fetchProfileCompletion()]);
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Failed to update bank account");
+    } finally {
+      setBankLoading(false);
+    }
+  };
+
+  const handleDeleteBankAccount = async (accountId: string) => {
+    try {
+      await axiosInstance.delete(`bank-accounts/${accountId}`);
+      message.success("Bank account deleted successfully!");
+      await Promise.all([fetchBankAccounts(), fetchProfileCompletion()]);
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Failed to delete bank account");
+    }
+  };
+
+  const handleEditBankAccount = (account: BankAccount) => {
+    setEditingBankAccount(account);
+    setBankFormData({
+      bankTemplateId: account.bankTemplate._id,
+      firstname: account.firstname,
+      lastname: account.lastname,
+      accountNumber: account.accountNumber,
+      accountHolderName: account.accountHolderName,
+      accountType: account.accountType,
+      branchName: account.branchName || "",
+      swiftCode: account.swiftCode || "",
+      isDefault: account.isDefault,
+    });
+    openBankModal();
+  };
+
+  const resetBankForm = () => {
+    setBankFormData({
+      bankTemplateId: "",
+      firstname: "",
+      lastname: "",
+      accountNumber: "",
+      accountHolderName: "",
+      accountType: "Checking",
+      branchName: "",
+      swiftCode: "",
+      isDefault: false,
+    });
+    setEditingBankAccount(null);
+  };
+
+  const openAddBankAccountModal = () => {
+    resetBankForm();
+    openBankModal();
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,16 +345,50 @@ export default function UserMetaCard() {
                   {organizerDetails.city || "N/A"}
                 </p>
               </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Profile Completion: {profileCompletion}%
-              </p>
+              <div className="mt-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                  Profile Completion: {profileCompletion?.isComplete ? (
+                    <span className="text-green-600 dark:text-green-400 font-semibold">Complete ✓</span>
+                  ) : (
+                    <span className="text-orange-600 dark:text-orange-400 font-semibold">Incomplete</span>
+                  )}
+                </p>
+                {profileCompletion && !profileCompletion.isComplete && profileCompletion.missingFields.length > 0 && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    Missing: {profileCompletion.missingFields.join(", ")}
+                  </p>
+                )}
+              </div>
             </div>
 
           </div>
         </div>
       </div>
+      {/* Profile Completion Alert */}
+      {profileCompletion && !profileCompletion.isComplete && (
+        <Alert
+          message="Profile Incomplete"
+          description={
+            <div>
+              <p className="mb-2">Please complete the following required fields to create events:</p>
+              <ul className="list-disc list-inside space-y-1">
+                {profileCompletion.missingFields.includes('companyName') && <li>Company Name</li>}
+                {profileCompletion.missingFields.includes('bankAccount') && <li>At least one Bank Account</li>}
+                {profileCompletion.missingFields.includes('firstname') && <li>First Name (in bank account)</li>}
+                {profileCompletion.missingFields.includes('lastname') && <li>Last Name (in bank account)</li>}
+              </ul>
+            </div>
+          }
+          type="warning"
+          icon={<ExclamationCircleOutlined />}
+          showIcon
+          className="mb-6"
+          closable
+        />
+      )}
+
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div>
+        <div className="flex-1">
           <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
             Organization Information
           </h4>
@@ -181,9 +396,10 @@ export default function UserMetaCard() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Company Name              </p>
+                Company Name
+              </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {organizerDetails.companyName}
+                {organizerDetails.companyName || <span className="text-red-500 italic">Not set</span>}
               </p>
             </div>
 
@@ -262,6 +478,100 @@ export default function UserMetaCard() {
           Edit
         </button>
       </div>
+
+      {/* Bank Accounts Section */}
+      <div className="mt-6 p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div>
+            <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+              Bank Accounts
+            </h4>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Manage your bank accounts for receiving payments
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={openAddBankAccountModal}
+            className="flex items-center gap-2"
+          >
+            <PlusOutlined />
+            Add Bank Account
+          </Button>
+        </div>
+
+        {bankAccounts.length === 0 ? (
+          <div className="text-center py-8 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+            <p className="text-gray-500 dark:text-gray-400 mb-2">No bank accounts added</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+              Add at least one bank account to receive payments
+            </p>
+            <Button size="sm" onClick={openAddBankAccountModal}>
+              <PlusOutlined />
+              Add Your First Bank Account
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {bankAccounts.map((account) => (
+              <div
+                key={account._id}
+                className="p-4 border border-gray-200 rounded-lg dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h5 className="font-semibold text-gray-800 dark:text-white/90">
+                        {account.bankTemplate.bankName}
+                      </h5>
+                      {account.isDefault && (
+                        <Tag color="blue" className="text-xs">Default</Tag>
+                      )}
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Name:</span> {account.firstname} {account.lastname}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Account:</span> {account.accountNumber}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Holder:</span> {account.accountHolderName}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        <span className="font-medium">Type:</span> {account.accountType}
+                      </p>
+                      {account.branchName && (
+                        <p className="text-gray-600 dark:text-gray-400">
+                          <span className="font-medium">Branch:</span> {account.branchName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEditBankAccount(account)}
+                    >
+                      <EditOutlined />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteBankAccount(account._id)}
+                    >
+                      <DeleteOutlined />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Edit Profile Modal */}
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
@@ -273,8 +583,8 @@ export default function UserMetaCard() {
             </p>
           </div>
           <form className="flex flex-col" onSubmit={(e) => {
-            e.preventDefault(); // Prevent the default form submission behavior
-            handleSave(); // Call the save function
+            e.preventDefault();
+            handleSave();
           }}>
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
               <div className="mt-7">
@@ -287,10 +597,11 @@ export default function UserMetaCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2">
                     <Label>Logo</Label>
-                    <Input
+                    <input
                       type="file"
                       accept="image/*"
                       onChange={handleLogoChange}
+                      className="w-full p-2 border border-gray-300 rounded-md dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                     />
                   </div>
                   <div className="col-span-2 lg:col-span-1">
@@ -298,7 +609,7 @@ export default function UserMetaCard() {
                     <Input
                       type="text"
                       value={organizerDetails.organizer.username}
-                      readOnly
+                      disabled
                     />
                   </div>
 
@@ -307,7 +618,7 @@ export default function UserMetaCard() {
                     <Input
                       type="text"
                       value={organizerDetails.organizer.email}
-                      readOnly
+                      disabled
                     />
                   </div>
 
@@ -354,7 +665,7 @@ export default function UserMetaCard() {
                   </div>
 
                   <div className="col-span-2">
-                    <Label>Company Name</Label>
+                    <Label>Company Name <span className="text-red-500">*</span></Label>
                     <Input
                       type="text"
                       value={organizerDetails.companyName}
@@ -364,6 +675,7 @@ export default function UserMetaCard() {
                           companyName: e.target.value,
                         })
                       }
+                      placeholder="Enter your company name"
                     />
                   </div>
 
@@ -456,8 +768,234 @@ export default function UserMetaCard() {
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <Button size="sm" type="submit">
+              <Button size="sm" onClick={handleSave}>
                 Save Changes
+              </Button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      {/* Bank Account Modal */}
+      <Modal isOpen={isBankModalOpen} onClose={closeBankModal} className="max-w-[600px] m-4">
+        <div className="no-scrollbar relative w-full max-w-[600px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              {editingBankAccount ? "Edit Bank Account" : "Add Bank Account"}
+            </h4>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+              {editingBankAccount 
+                ? "Update your bank account details." 
+                : "Add a bank account to receive payments from event bookings."}
+            </p>
+          </div>
+          <form className="flex flex-col" onSubmit={(e) => {
+            e.preventDefault();
+            if (editingBankAccount) {
+              handleUpdateBankAccount();
+            } else {
+              handleCreateBankAccount();
+            }
+          }}>
+            <div className="custom-scrollbar max-h-[500px] overflow-y-auto px-2 pb-3">
+              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+                <div className="col-span-2">
+                  <Label>Bank <span className="text-red-500">*</span></Label>
+                  <Select
+                    value={bankFormData.bankTemplateId || undefined}
+                    onChange={(value) => {
+                      const selectedTemplate = bankTemplates.find(t => t._id === value);
+                      setBankFormData({ 
+                        ...bankFormData, 
+                        bankTemplateId: value || "",
+                        accountType: selectedTemplate?.accountTypes[0] || "Checking",
+                        swiftCode: selectedTemplate?.swiftCode || ""
+                      });
+                    }}
+                    placeholder="Search and select a bank..."
+                    style={{ width: '100%' }}
+                    size="large"
+                    options={bankTemplates
+                      .filter(template => template.isActive)
+                      .map(template => ({
+                        value: template._id,
+                        label: template.bankName,
+                        bankCode: template.bankCode,
+                        swiftCode: template.swiftCode
+                      }))}
+                    disabled={!!editingBankAccount}
+                    showSearch
+                    allowClear
+                    optionFilterProp="label"
+                    filterOption={(input, option) => {
+                      const searchText = input.toLowerCase();
+                      const label = (option?.label ?? '').toLowerCase();
+                      const bankCode = (option?.bankCode ?? '').toLowerCase();
+                      const swiftCode = (option?.swiftCode ?? '').toLowerCase();
+                      return label.includes(searchText) || 
+                             bankCode.includes(searchText) || 
+                             swiftCode.includes(searchText);
+                    }}
+                    notFoundContent={
+                      bankTemplates.filter(t => t.isActive).length === 0 
+                        ? "No active banks available" 
+                        : "No banks found"
+                    }
+                    getPopupContainer={(trigger) => trigger.parentElement || document.body}
+                    dropdownStyle={{ zIndex: 1050 }}
+                  />
+                  {bankFormData.bankTemplateId && (() => {
+                    const selectedTemplate = bankTemplates.find(t => t._id === bankFormData.bankTemplateId);
+                    return selectedTemplate ? (
+                      <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+                            {selectedTemplate.bankName}
+                          </p>
+                          {selectedTemplate.bankCode && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">Bank Code:</span> {selectedTemplate.bankCode}
+                            </p>
+                          )}
+                          {selectedTemplate.swiftCode && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">SWIFT Code:</span> {selectedTemplate.swiftCode}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            <span className="font-medium">Available Account Types:</span> {selectedTemplate.accountTypes.join(", ")}
+                          </p>
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+
+                <div className="col-span-2 lg:col-span-1">
+                  <Label>First Name <span className="text-red-500">*</span></Label>
+                  <Input
+                    type="text"
+                    value={bankFormData.firstname}
+                    onChange={(e) =>
+                      setBankFormData({ ...bankFormData, firstname: e.target.value })
+                    }
+                    placeholder="Enter your first name"
+                  />
+                </div>
+
+                <div className="col-span-2 lg:col-span-1">
+                  <Label>Last Name <span className="text-red-500">*</span></Label>
+                  <Input
+                    type="text"
+                    value={bankFormData.lastname}
+                    onChange={(e) =>
+                      setBankFormData({ ...bankFormData, lastname: e.target.value })
+                    }
+                    placeholder="Enter your last name"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label>Account Number <span className="text-red-500">*</span></Label>
+                  <Input
+                    type="text"
+                    value={bankFormData.accountNumber}
+                    onChange={(e) =>
+                      setBankFormData({ ...bankFormData, accountNumber: e.target.value })
+                    }
+                    placeholder="Enter account number"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label>Account Holder Name <span className="text-red-500">*</span></Label>
+                  <Input
+                    type="text"
+                    value={bankFormData.accountHolderName}
+                    onChange={(e) =>
+                      setBankFormData({ ...bankFormData, accountHolderName: e.target.value })
+                    }
+                    placeholder="Enter account holder name"
+                  />
+                </div>
+
+                <div className="col-span-2 lg:col-span-1">
+                  <Label>Account Type <span className="text-red-500">*</span></Label>
+                  <Select
+                    value={bankFormData.accountType}
+                    onChange={(value) =>
+                      setBankFormData({ ...bankFormData, accountType: value })
+                    }
+                    className="w-full"
+                    disabled={!bankFormData.bankTemplateId}
+                    options={
+                      bankFormData.bankTemplateId
+                        ? bankTemplates
+                            .find(t => t._id === bankFormData.bankTemplateId)
+                            ?.accountTypes.map(type => ({ value: type, label: type })) || []
+                        : []
+                    }
+                  />
+                </div>
+
+                <div className="col-span-2 lg:col-span-1">
+                  <Label>Branch Name</Label>
+                  <Input
+                    type="text"
+                    value={bankFormData.branchName}
+                    onChange={(e) =>
+                      setBankFormData({ ...bankFormData, branchName: e.target.value })
+                    }
+                    placeholder="Optional"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label>SWIFT Code</Label>
+                  <Input
+                    type="text"
+                    value={bankFormData.swiftCode}
+                    onChange={(e) =>
+                      setBankFormData({ ...bankFormData, swiftCode: e.target.value })
+                    }
+                    placeholder={bankFormData.bankTemplateId && bankTemplates.find(t => t._id === bankFormData.bankTemplateId)?.swiftCode 
+                      ? "Auto-filled from bank template (can be overridden)" 
+                      : "Optional"}
+                  />
+                  {bankFormData.bankTemplateId && bankTemplates.find(t => t._id === bankFormData.bankTemplateId)?.swiftCode && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <span className="text-green-600 dark:text-green-400">✓</span> Auto-filled from bank template. You can edit if needed.
+                    </p>
+                  )}
+                </div>
+
+                <div className="col-span-2">
+                  <Label>
+                    <input
+                      type="checkbox"
+                      checked={bankFormData.isDefault}
+                      onChange={(e) =>
+                        setBankFormData({ ...bankFormData, isDefault: e.target.checked })
+                      }
+                      className="mr-2"
+                    />
+                    Set as default account
+                  </Label>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+              <Button size="sm" variant="outline" onClick={() => { closeBankModal(); resetBankForm(); }}>
+                Cancel
+              </Button>
+              <Button size="sm" disabled={bankLoading} onClick={() => {
+                if (editingBankAccount) {
+                  handleUpdateBankAccount();
+                } else {
+                  handleCreateBankAccount();
+                }
+              }}>
+                {editingBankAccount ? "Update" : "Add"} Bank Account
               </Button>
             </div>
           </form>

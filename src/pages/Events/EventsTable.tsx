@@ -22,11 +22,14 @@ interface EventResponse {
     pagination: PaginationInfo;
 }
 
+import { Link } from "react-router";
+
 export default function EventsTable() {
     const [tableData, setTableData] = useState<any[]>([]);
     const [allUsers, setAllUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
+    const [organizerStatus, setOrganizerStatus] = useState<string | null>(null);
     
     // Pagination state
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -43,6 +46,28 @@ export default function EventsTable() {
     // Search state
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+
+    // Fetch organizer status on component mount
+    useEffect(() => {
+        const fetchOrganizerStatus = async () => {
+            try {
+                const storedStatus = sessionStorage.getItem("organizerStatus");
+                if (storedStatus) {
+                    setOrganizerStatus(storedStatus);
+                } else {
+                    // Fetch from API if not in sessionStorage
+                    const response = await axiosInstance.get("auth/organizer/detail");
+                    if (response.data?.status) {
+                        setOrganizerStatus(response.data.status);
+                        sessionStorage.setItem("organizerStatus", response.data.status);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching organizer status:", error);
+            }
+        };
+        fetchOrganizerStatus();
+    }, []);
 
     // Debounce search query
     useEffect(() => {
@@ -124,6 +149,32 @@ export default function EventsTable() {
             />
             <PageBreadcrumb pageTitle="My Events" />
             <div className="space-y-6">
+                {/* Show alert if profile is not approved */}
+                {organizerStatus && organizerStatus !== 'Approved' && (
+                    <Alert
+                        message="Profile Incomplete"
+                        description={
+                            <div>
+                                <p className="mb-2">
+                                    Your organizer profile is not approved. Please complete all required fields in your profile to create events.
+                                </p>
+                                <p className="mb-3 text-sm">
+                                    Required fields: Company name, TIN number, Registration number, Company description, Logo, Phone number, Address, City, and Bank account details with firstname and lastname.
+                                </p>
+                                <Link 
+                                    to="/profile" 
+                                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                                >
+                                    Complete Your Profile →
+                                </Link>
+                            </div>
+                        }
+                        type="warning"
+                        showIcon
+                        closable
+                        className="mb-4"
+                    />
+                )}
                 <ComponentCard title="">
                     {error ? (
                         <Alert
@@ -151,7 +202,7 @@ export default function EventsTable() {
                             ) : (
                                 <>
                                     {/* Render the EventTable component */}
-                                    <EventTable tableData={tableData} />
+                                    <EventTable tableData={tableData} organizerStatus={organizerStatus} />
 
                                     {/* Pagination */}
                                     {pagination.totalItems > 0 && (

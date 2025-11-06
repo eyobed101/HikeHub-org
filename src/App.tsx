@@ -22,7 +22,6 @@ import EventsTable from "./pages/Events/EventsTable";
 import ManageParticipants from "./pages/Events/ManageParticipants";
 import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
-import ChatPage from "./pages/ChatPage/chat";
 
 const protectedRoutes = [
   { path: "/", element: <Home /> },
@@ -42,7 +41,6 @@ const protectedRoutes = [
   { path: "/videos", element: <Videos /> },
   { path: "/line-chart", element: <LineChart /> },
   { path: "/bar-chart", element: <BarChart /> },
-  { path: "/chat", element: <ChatPage /> },
 ];
 
 export default function App() {

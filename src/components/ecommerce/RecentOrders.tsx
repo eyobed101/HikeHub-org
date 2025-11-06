@@ -5,6 +5,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { shortenUrl, isValidUrl, formatUrl } from "../../utils/urlShortener";
 
 interface TopEvent {
   _id: string;
@@ -104,8 +105,22 @@ export default function RecentOrders({ topEvents }: RecentOrdersProps) {
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {event.location}
+                <TableCell className="py-3">
+                  {isValidUrl(event.location) ? (
+                    <a
+                      href={formatUrl(event.location)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-700 hover:underline cursor-pointer transition-colors text-theme-sm"
+                      title={event.location}
+                    >
+                      {shortenUrl(event.location, 40)}
+                    </a>
+                  ) : (
+                    <span className="text-gray-500 text-theme-sm dark:text-gray-400">
+                      {event.location}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   {event.participants || 0}
