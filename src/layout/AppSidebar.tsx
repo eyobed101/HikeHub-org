@@ -10,6 +10,7 @@ import {
   HorizontaLDots,
   ListIcon,
   PageIcon,
+  PieChartIcon,
 
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
@@ -42,6 +43,11 @@ const navItems: NavItem[] = [
     icon: <GroupIcon />,
     name: "Manage Participants",
     path: "/manage-participants",
+  },
+  {
+    icon: <PieChartIcon />,
+    name: "Engagement Analytics",
+    path: "/engagement-analytics",
   },
   {
     icon: <PageIcon />,

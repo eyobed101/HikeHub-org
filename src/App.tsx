@@ -20,6 +20,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import EventsTable from "./pages/Events/EventsTable";
 import ManageParticipants from "./pages/Events/ManageParticipants";
+import EngagementAnalytics from "./pages/Events/EngagementAnalytics";
 import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
 
@@ -28,6 +29,7 @@ const protectedRoutes = [
   { path: "/home", element: <Home /> },
   { path: "/events", element: <EventsTable /> },
   { path: "/manage-participants", element: <ManageParticipants /> },
+  { path: "/engagement-analytics", element: <EngagementAnalytics /> },
   { path: "/profile", element: <UserProfiles /> },
   { path: "/calendar", element: <Calendar /> },
   { path: "/blank", element: <Blank /> },

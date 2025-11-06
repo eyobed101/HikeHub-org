@@ -6,6 +6,8 @@ import {
   TableRow,
 } from "../ui/table";
 import { shortenUrl, isValidUrl, formatUrl } from "../../utils/urlShortener";
+import { Link } from "react-router";
+import { ArrowRightIcon } from "../../icons";
 
 interface TopEvent {
   _id: string;
@@ -32,6 +34,13 @@ export default function RecentOrders({ topEvents }: RecentOrdersProps) {
             Top 5 Engaged Events
           </h3>
         </div>
+        <Link
+          to="/engagement-analytics"
+          className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+        >
+          See More
+          <ArrowRightIcon className="w-4 h-4" />
+        </Link>
       </div>
       <div className="max-w-full overflow-x-auto">
         <Table>
