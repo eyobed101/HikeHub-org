@@ -22,9 +22,17 @@ interface DashboardStatistics {
     activeEvents: number;
     totalEvents: number;
   };
+  netBalance: {
+    totalTransactionAmount: number;
+    totalCommissionAmount: number;
+    totalOrganizerAmount: number;
+    totalTransactions: number;
+  };
   monthly: {
     participants: number[];
     revenue: number[];
+    netBalance: number[];
+    commission: number[];
   };
   quarterly: {
     participants: number[];
@@ -156,8 +164,8 @@ export default function Home() {
 
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 space-y-6 xl:col-span-7">
-          {/* Pass metrics to EcommerceMetrics */}
-          <EcommerceMetrics metrics={statistics.metrics} />
+          {/* Pass metrics and netBalance to EcommerceMetrics */}
+          <EcommerceMetrics metrics={statistics.metrics} netBalance={statistics.netBalance} />
 
           {/* Pass monthly data to MonthlySalesChart */}
           <MonthlySalesChart monthlyParticipants={statistics.monthly.participants} />

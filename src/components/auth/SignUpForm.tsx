@@ -1,13 +1,86 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
+import axiosInstance from "../../utils/axiosInstance";
+import { toast } from "react-toastify";
+import { Spin } from "antd";
 
 export default function SignUpForm() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    phone_number: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!isChecked) {
+      toast.error("Please agree to the Terms and Conditions");
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.username || !formData.email || !formData.password) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Validate phone number (required for EventOrganizer)
+    if (!formData.phone_number) {
+      toast.error("Phone number is required");
+      return;
+    }
+
+    // Validate password length
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Use EventOrganizer registration endpoint
+      const endpoint = "auth/org/register";
+
+      // Prepare request data
+      const requestData = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        phone_number: formData.phone_number,
+      };
+
+      const response = await axiosInstance.post(endpoint, requestData);
+
+      if (response.status === 201) {
+        toast.success("Account created successfully! Please sign in.");
+        // Redirect to sign in page after a short delay
+        setTimeout(() => {
+          navigate("/signin");
+        }, 1500);
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Registration failed. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
       <div className="w-full max-w-md mx-auto mb-5 sm:pt-10">
@@ -26,11 +99,13 @@ export default function SignUpForm() {
               Sign Up
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to sign up!
+              Enter your information to create an account!
             </p>
           </div>
           <div>
-            {/* <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-5">
+                {/* <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
               <button className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10">
                 <svg
                   width="20"
@@ -82,33 +157,20 @@ export default function SignUpForm() {
                 </span>
               </div>
             </div> */}
-            <form>
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {/* <!-- First Name --> */}
-                  <div className="sm:col-span-1">
-                    <Label>
-                      First Name<span className="text-error-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      id="fname"
-                      name="fname"
-                      placeholder="Enter your first name"
-                    />
-                  </div>
-                  {/* <!-- Last Name --> */}
-                  <div className="sm:col-span-1">
-                    <Label>
-                      Last Name<span className="text-error-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      id="lname"
-                      name="lname"
-                      placeholder="Enter your last name"
-                    />
-                  </div>
+                {/* <!-- Username --> */}
+                <div>
+                  <Label>
+                    Username<span className="text-error-500">*</span>
+                  </Label>
+                  <Input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    required
+                  />
                 </div>
                 {/* <!-- Email --> */}
                 <div>
@@ -120,6 +182,24 @@ export default function SignUpForm() {
                     id="email"
                     name="email"
                     placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
+                </div>
+                {/* <!-- Phone Number --> */}
+                <div>
+                  <Label>
+                    Phone Number<span className="text-error-500">*</span>
+                  </Label>
+                  <Input
+                    type="tel"
+                    id="phone_number"
+                    name="phone_number"
+                    placeholder="Enter your phone number"
+                    value={formData.phone_number}
+                    onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                    required
                   />
                 </div>
                 {/* <!-- Password --> */}
@@ -131,6 +211,11 @@ export default function SignUpForm() {
                     <Input
                       placeholder="Enter your password"
                       type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required
+                      minLength={6}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -164,8 +249,19 @@ export default function SignUpForm() {
                 </div>
                 {/* <!-- Button --> */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-                    Sign Up
+                  <button
+                    type="submit"
+                    disabled={loading || !isChecked}
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <>
+                        <Spin size="small" className="mr-2" />
+                        Signing Up...
+                      </>
+                    ) : (
+                      "Sign Up"
+                    )}
                   </button>
                 </div>
               </div>

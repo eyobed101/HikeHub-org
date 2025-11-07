@@ -55,6 +55,7 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
   const [searchQuery, setSearchQuery] = useState(""); // Search query for filtering
   const [filteredData, setFilteredData] = useState<Event[]>([]); // Filtered data
   const [loading, setLoading] = useState(false); // State to track loading
+  const [commissionRate, setCommissionRate] = useState<number | null>(null); // Commission rate from organizer details
 
   // Ensure tableData is always an array and update filteredData when tableData changes
   useEffect(() => {
@@ -117,6 +118,26 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
     announcement: "",
   });
 
+
+  // Fetch organizer details to get commission rate
+  useEffect(() => {
+    const fetchOrganizerDetails = async () => {
+      try {
+        const response = await axiosInstance.get("auth/organizer/detail");
+        if (response.data && response.data.data && response.data.data.commissionRate !== undefined) {
+          setCommissionRate(response.data.data.commissionRate);
+        } else if (response.data && response.data.commissionRate !== undefined) {
+          setCommissionRate(response.data.commissionRate);
+        }
+      } catch (error) {
+        console.error("Error fetching organizer details:", error);
+        // Set default commission rate if fetch fails
+        setCommissionRate(5); // Default 5%
+      }
+    };
+
+    fetchOrganizerDetails();
+  }, []);
 
   useEffect(() => {
 
@@ -546,6 +567,30 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
                     <div>
                       <Label>Price</Label>
                       <Input name="price" type="number" value={formData.price} onChange={handleInputChange} />
+                      {isModalOpen && commissionRate !== null && formData.price > 0 && (
+                        <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                          <div className="space-y-1.5 text-xs">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600 dark:text-gray-400">Event Price:</span>
+                              <span className="font-semibold text-gray-800 dark:text-gray-200">${parseFloat(formData.price.toString() || '0').toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600 dark:text-gray-400">Commission ({commissionRate}%):</span>
+                              <span className="font-semibold text-red-600 dark:text-red-400">
+                                -${((parseFloat(formData.price.toString() || '0') * commissionRate) / 100).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="pt-1.5 border-t border-blue-200 dark:border-blue-700">
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-700 dark:text-gray-300">You Will Receive:</span>
+                                <span className="font-bold text-green-600 dark:text-green-400 text-sm">
+                                  ${(parseFloat(formData.price.toString() || '0') - (parseFloat(formData.price.toString() || '0') * commissionRate) / 100).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label>Max Participants</Label>
