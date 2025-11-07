@@ -15,6 +15,18 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'antd-vendor': ['antd'],
+          'chart-vendor': ['apexcharts', 'react-apexcharts'],
+        },
+      },
+    },
+  },
   server: {
     host: 'localhost',          // Ensure it runs on localhost
     port: 3000,                 // Optional: Custom port
