@@ -155,7 +155,18 @@ const refreshAccessToken = async (): Promise<string> => {
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     // List of endpoints that don't require authentication
-    const publicEndpoints = ['auth/login', 'auth/register', 'auth/refresh', 'auth/signup', 'auth/signin', 'auth/send-otp', 'auth/verify-otp'];
+    const publicEndpoints = [
+      'auth/login', 
+      'auth/register', 
+      'auth/refresh', 
+      'auth/signup', 
+      'auth/signin', 
+      'auth/send-otp', 
+      'auth/verify-otp',
+      'auth/org/register',
+      'auth/hiker/register',
+      'auth/super/register'
+    ];
     
     // Check if this is a public endpoint
     const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url?.includes(endpoint));

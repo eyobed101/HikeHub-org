@@ -399,31 +399,31 @@ export default function EngagementAnalytics() {
   }
 
   return (
-    <>
+    <div className="w-full max-w-full overflow-x-hidden">
       <PageMeta title="HikeHub | Engagement Analytics" description="" />
       <PageBreadcrumb pageTitle="Engagement Analytics" />
 
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full">
         {/* Filters */}
-        <ComponentCard title="">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex items-center gap-2">
+        <ComponentCard title="" className="w-full">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between w-full">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <CalendarOutlined className="text-gray-500 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters:</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Filters:</span>
             </div>
-            <Space direction="horizontal" size="middle" className="flex-wrap">
+            <div className="flex flex-wrap gap-3 w-full sm:w-auto">
               <Input
                 prefix={<SearchOutlined />}
                 placeholder="Search events..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: 200 }}
+                className="w-full sm:w-[180px]"
                 allowClear
               />
               <Select
                 value={statusFilter}
                 onChange={setStatusFilter}
-                style={{ width: 120 }}
+                className="w-full sm:w-[140px]"
                 options={[
                   { value: 'all', label: 'All Status' },
                   { value: 'Approved', label: 'Approved' },
@@ -434,7 +434,7 @@ export default function EngagementAnalytics() {
               <Select
                 value={yearFilter}
                 onChange={handleYearChange}
-                style={{ width: 120 }}
+                className="w-full sm:w-[120px]"
                 options={yearOptions}
                 disabled={dateRange[0] !== null || dateRange[1] !== null}
               />
@@ -444,14 +444,15 @@ export default function EngagementAnalytics() {
                 format="YYYY-MM-DD"
                 placeholder={["Start Date", "End Date"]}
                 disabledDate={(current) => current && current > dayjs().endOf("day")}
+                className="w-full sm:w-auto"
               />
-            </Space>
+            </div>
           </div>
         </ComponentCard>
 
         {/* Metrics Cards */}
         {metrics && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
             <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-md transition-shadow">
               <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl mb-4">
                 <EyeOutlined className="text-blue-600 dark:text-blue-400 text-xl" />
@@ -504,22 +505,22 @@ export default function EngagementAnalytics() {
 
         {/* Top Performing Event */}
         {metrics?.topPerformingEvent && (
-          <ComponentCard title="Top Performing Event">
-            <div className="flex flex-col md:flex-row gap-6 items-start">
+          <ComponentCard title="Top Performing Event" className="w-full">
+            <div className="flex flex-col md:flex-row gap-6 items-start w-full">
               {metrics.topPerformingEvent.multimedia && metrics.topPerformingEvent.multimedia.length > 0 && (
                 <img
                   src={metrics.topPerformingEvent.multimedia[0].startsWith('http')
                     ? metrics.topPerformingEvent.multimedia[0]
                     : `http://localhost:3030/uploads/${metrics.topPerformingEvent.multimedia[0]}`}
                   alt={metrics.topPerformingEvent.title}
-                  className="w-full md:w-48 h-48 object-cover rounded-lg"
+                  className="w-full md:w-48 h-48 object-cover rounded-lg flex-shrink-0"
                 />
               )}
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90 mb-2">
+              <div className="flex-1 min-w-0 w-full">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90 mb-2 break-words">
                   {metrics.topPerformingEvent.title}
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 w-full">
                   <div>
                     <span className="text-sm text-gray-500 dark:text-gray-400">Views</span>
                     <p className="text-lg font-semibold text-gray-800 dark:text-white/90">
@@ -553,66 +554,96 @@ export default function EngagementAnalytics() {
         )}
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
           {/* Engagement Trend */}
-          {metrics && engagementTrendSeries.length > 0 && (
-            <ComponentCard title="Engagement Trend Over Time">
-              <div className="max-w-full overflow-x-auto custom-scrollbar">
+          {metrics && engagementTrendSeries.length > 0 ? (
+            <ComponentCard title="Engagement Trend Over Time" className="w-full">
+              <div className="w-full overflow-x-auto custom-scrollbar">
                 <Chart
                   options={engagementTrendOptions}
                   series={engagementTrendSeries}
                   type="line"
                   height={350}
+                  width="100%"
                 />
+              </div>
+            </ComponentCard>
+          ) : (
+            <ComponentCard title="Engagement Trend Over Time" className="w-full">
+              <div className="w-full text-center py-8 text-gray-500 dark:text-gray-400">
+                No data available
               </div>
             </ComponentCard>
           )}
 
           {/* Status Distribution */}
-          {metrics && statusDistributionSeries.length > 0 && (
-            <ComponentCard title="Events by Status">
-              <div className="max-w-full overflow-x-auto custom-scrollbar">
+          {metrics && statusDistributionSeries.length > 0 ? (
+            <ComponentCard title="Events by Status" className="w-full">
+              <div className="w-full overflow-x-auto custom-scrollbar">
                 <Chart
                   options={statusDistributionOptions}
                   series={statusDistributionSeries}
                   type="donut"
                   height={350}
+                  width="100%"
                 />
+              </div>
+            </ComponentCard>
+          ) : (
+            <ComponentCard title="Events by Status" className="w-full">
+              <div className="w-full text-center py-8 text-gray-500 dark:text-gray-400">
+                No data available
               </div>
             </ComponentCard>
           )}
 
           {/* Type Distribution */}
-          {metrics && typeDistributionSeries.length > 0 && (
-            <ComponentCard title="Events by Type">
-              <div className="max-w-full overflow-x-auto custom-scrollbar">
+          {metrics && typeDistributionSeries.length > 0 ? (
+            <ComponentCard title="Events by Type" className="w-full">
+              <div className="w-full overflow-x-auto custom-scrollbar">
                 <Chart
                   options={typeDistributionOptions}
                   series={typeDistributionSeries}
                   type="bar"
                   height={350}
+                  width="100%"
                 />
+              </div>
+            </ComponentCard>
+          ) : (
+            <ComponentCard title="Events by Type" className="w-full">
+              <div className="w-full text-center py-8 text-gray-500 dark:text-gray-400">
+                No data available
               </div>
             </ComponentCard>
           )}
         </div>
 
         {/* Events Table */}
-        <ComponentCard title="All Events Engagement Data">
-          <Table
-            columns={columns}
-            dataSource={filteredEvents}
-            rowKey="_id"
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: (total) => `Total ${total} events`,
-            }}
-            scroll={{ x: 'max-content' }}
-          />
+        <ComponentCard title="All Events Engagement Data" className="w-full">
+          <div className="w-full overflow-x-auto">
+            {filteredEvents.length > 0 ? (
+              <Table
+                columns={columns}
+                dataSource={filteredEvents}
+                rowKey="_id"
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} events`,
+                }}
+                scroll={{ x: 800 }}
+                size="middle"
+              />
+            ) : (
+              <div className="w-full text-center py-8 text-gray-500 dark:text-gray-400">
+                No events found
+              </div>
+            )}
+          </div>
         </ComponentCard>
       </div>
-    </>
+    </div>
   );
 }
 
