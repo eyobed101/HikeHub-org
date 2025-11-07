@@ -9,7 +9,7 @@ import { Spin, Input, Select, Table, Badge, Button, Space, message, Popconfirm }
 import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import { Modal } from "../../components/ui/modal";
 import Label from "../../components/form/Label";
-import ButtonComponent from "../../components/ui/button/Button";
+import ButtonComponent from "../../components/ui/Button/Button";
 
 const { Option } = Select;
 

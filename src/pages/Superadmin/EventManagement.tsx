@@ -9,7 +9,7 @@ import { Spin, Input, Select, Table, Badge, Button, Space, message, DatePicker }
 import { SearchOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
 import { Modal } from "../../components/ui/modal";
 import Label from "../../components/form/Label";
-import ButtonComponent from "../../components/ui/button/Button";
+import ButtonComponent from "../../components/ui/Button/Button";
 import { shortenUrl, isValidUrl, formatUrl } from "../../utils/urlShortener";
 import dayjs from "dayjs";
 

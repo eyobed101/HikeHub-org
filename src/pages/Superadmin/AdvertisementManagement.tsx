@@ -9,7 +9,7 @@ import { Spin, Input, Table, Badge, Button, Space, message, Popconfirm, Paginati
 import { SearchOutlined, EyeOutlined, EditOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Modal } from "../../components/ui/modal";
 import Label from "../../components/form/Label";
-import ButtonComponent from "../../components/ui/button/Button";
+import ButtonComponent from "../../components/ui/Button/Button";
 import dayjs, { Dayjs } from "dayjs";
 import type { UploadFile } from "antd/es/upload/interface";
 import { Upload } from "antd";
