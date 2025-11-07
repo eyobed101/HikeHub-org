@@ -6,6 +6,7 @@ import { Link } from "react-router";
 import { logout } from "../../store/authSlice";
 import axiosInstance from "../../utils/axiosInstance";
 import { performLogout } from "../../utils/logout";
+import { getUserRole, getUserId } from "../../utils/userRole";
 
 
 export default function UserDropdown() {
@@ -33,20 +34,92 @@ export default function UserDropdown() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axiosInstance.get("auth/organizer/detail");
-        const data = response.data; // Assuming the first object is the relevant one
-        if (data) {
+        const userRole = getUserRole();
+        const userId = getUserId();
+
+        if (userRole === 'Superadmin') {
+          // For Superadmin, fetch user details using superadmin endpoint
+          if (userId) {
+            try {
+              const response = await axiosInstance.get(`superadmin/users/${userId}`);
+              if (response.data.status === 1 && response.data.data) {
+                const user = response.data.data;
+                setUserData({
+                  organizer: {
+                    username: user.username || "Superadmin",
+                    email: user.email || "N/A",
+                  },
+                  companyName: "Superadmin",
+                  logo: user.profilePicture || "default-logo.jpg",
+                });
+                return;
+              }
+            } catch (error) {
+              console.error("Error fetching superadmin data:", error);
+            }
+          }
+          // Fallback for Superadmin
           setUserData({
             organizer: {
-              username: data.organizer?.username || "N/A",
-              email: data.organizer?.email || "N/A",
+              username: "Superadmin",
+              email: "admin@hikehub.com",
             },
-            companyName: data.companyName || "N/A",
-            logo: data.logo || "default-logo.jpg", // Fallback to a default logo if none exists
+            companyName: "Superadmin",
+            logo: "default-logo.jpg",
           });
+        } else if (userRole === 'EventOrganizer') {
+          // For EventOrganizer, fetch organizer details
+          const response = await axiosInstance.get("auth/organizer/detail");
+          const data = response.data;
+          if (data) {
+            setUserData({
+              organizer: {
+                username: data.organizer?.username || "N/A",
+                email: data.organizer?.email || "N/A",
+              },
+              companyName: data.companyName || "N/A",
+              logo: data.logo || "default-logo.jpg",
+            });
+          }
+        } else {
+          // For Hiker or other roles, use profile endpoint
+          try {
+            const response = await axiosInstance.get("auth/profile");
+            if (response.data.success && response.data.data) {
+              const profile = response.data.data;
+              setUserData({
+                organizer: {
+                  username: `${profile.firstname || ''} ${profile.lastname || ''}`.trim() || "User",
+                  email: "N/A",
+                },
+                companyName: "Hiker",
+                logo: profile.profilePicture || "default-logo.jpg",
+              });
+            }
+          } catch (error) {
+            console.error("Error fetching profile:", error);
+            // Fallback
+            setUserData({
+              organizer: {
+                username: "User",
+                email: "N/A",
+              },
+              companyName: "User",
+              logo: "default-logo.jpg",
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        // Fallback
+        setUserData({
+          organizer: {
+            username: "User",
+            email: "N/A",
+          },
+          companyName: "User",
+          logo: "default-logo.jpg",
+        });
       }
     };
 
@@ -60,11 +133,31 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img
-            src={`http://localhost:3030/uploads/${userData.logo}`}
-            alt="User"
-            className="object-cover w-full h-full"
-          />
+          {userData.logo && !userData.logo.includes('default-logo') && !userData.logo.startsWith('http') ? (
+            <img
+              src={`http://localhost:3030/uploads/${userData.logo}`}
+              alt="User"
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/images/user/user-01.jpg';
+              }}
+            />
+          ) : userData.logo && userData.logo.startsWith('http') ? (
+            <img
+              src={userData.logo}
+              alt="User"
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/images/user/user-01.jpg';
+              }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <span className="text-gray-500 dark:text-gray-400 text-xs font-semibold">
+                {userData.organizer.username.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">

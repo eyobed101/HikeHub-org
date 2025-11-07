@@ -41,6 +41,33 @@ export const resetRefreshFailed = (setLoggingOut: boolean = false) => {
 // Export function to check if logout is in progress
 export const getIsLoggingOut = () => isLoggingOut;
 
+// Export function to proactively refresh token if needed
+export const ensureValidToken = async (): Promise<string | null> => {
+  const token = sessionStorage.getItem("accessToken");
+  
+  if (!token) {
+    return null;
+  }
+
+  // If refresh has failed, don't try again
+  if (refreshFailed || isLoggingOut) {
+    return null;
+  }
+
+  // Check if token is expired or about to expire
+  if (isTokenExpired(token)) {
+    try {
+      const newToken = await refreshAccessToken();
+      return newToken;
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      return null;
+    }
+  }
+
+  return token;
+};
+
 // Function to process queued requests after token refresh
 const processQueue = (error: any = null, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -149,34 +176,39 @@ axiosInstance.interceptors.request.use(
       throw new Error("No access token found. Please log in.");
     }
 
-    // Don't try to refresh if refresh has already failed or logout is in progress
-    if (refreshFailed || isLoggingOut) {
-      if (!isLoggingOut) {
-        isLoggingOut = true;
-        performLogout();
-      }
+    // Don't try to refresh if logout is in progress
+    if (isLoggingOut) {
       throw new Error("Session expired. Please log in again.");
     }
 
     // Check if token is expired or about to expire (with 5 minute buffer)
     if (isTokenExpired(token)) {
+      // If refresh has already failed, don't try again - let the request proceed
+      // The response interceptor will handle 401 errors
+      if (refreshFailed) {
+        // Still attach the token - let the server decide if it's valid
+        if (config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      }
+
+      // Try to refresh the token
       try {
         const newToken = await refreshAccessToken();
         if (config.headers) {
           config.headers.Authorization = `Bearer ${newToken}`;
         }
       } catch (error: unknown) {
-        // If refresh failed, don't throw again - let response interceptor handle it
-        if (error instanceof Error) {
-          if (error.message === "Session expired. Please log in again." || error.message === "Refresh token has expired. Please log in again.") {
-            // Don't throw here, let the request proceed and the response interceptor will handle the 401
-            // This prevents loops where request interceptor throws and response interceptor tries to refresh again
-            return config;
-          }
+        // If refresh failed, don't throw - let the request proceed with the old token
+        // The response interceptor will handle 401 errors and trigger logout if needed
+        if (config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
-        throw error;
+        return config;
       }
     } else {
+      // Token is still valid, use it
       if (config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }

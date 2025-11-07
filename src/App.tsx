@@ -18,31 +18,53 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
+import DashboardStats from "./pages/Superadmin/DashboardStats";
+import UserManagement from "./pages/Superadmin/UserManagement";
+import OrganizerManagement from "./pages/Superadmin/OrganizerManagement";
+import EventManagement from "./pages/Superadmin/EventManagement";
+import PaymentAnalytics from "./pages/Superadmin/PaymentAnalytics";
+import PlatformAnalytics from "./pages/Superadmin/PlatformAnalytics";
+import BankTemplates from "./pages/Superadmin/BankTemplates";
+import AdvertisementManagement from "./pages/Superadmin/AdvertisementManagement";
 import EventsTable from "./pages/Events/EventsTable";
 import ManageParticipants from "./pages/Events/ManageParticipants";
 import EngagementAnalytics from "./pages/Events/EngagementAnalytics";
 import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
+import RoleBasedRoute from "./components/common/RoleBasedRoute";
 
 const protectedRoutes = [
-  { path: "/", element: <Home /> },
-  { path: "/home", element: <Home /> },
-  { path: "/events", element: <EventsTable /> },
-  { path: "/manage-participants", element: <ManageParticipants /> },
-  { path: "/engagement-analytics", element: <EngagementAnalytics /> },
-  { path: "/profile", element: <UserProfiles /> },
-  { path: "/calendar", element: <Calendar /> },
-  { path: "/blank", element: <Blank /> },
-  { path: "/form-elements", element: <FormElements /> },
-  { path: "/basic-tables", element: <BasicTables /> },
-  { path: "/alerts", element: <Alerts /> },
-  { path: "/avatars", element: <Avatars /> },
-  { path: "/badge", element: <Badges /> },
-  { path: "/buttons", element: <Buttons /> },
-  { path: "/images", element: <Images /> },
-  { path: "/videos", element: <Videos /> },
-  { path: "/line-chart", element: <LineChart /> },
-  { path: "/bar-chart", element: <BarChart /> },
+  // Role-based dashboard routes
+  { path: "/", element: <Home />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/home", element: <Home />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/superadmin/dashboard-stats", element: <DashboardStats />, roles: ['Superadmin'] },
+  { path: "/superadmin/users", element: <UserManagement />, roles: ['Superadmin'] },
+  { path: "/superadmin/organizers", element: <OrganizerManagement />, roles: ['Superadmin'] },
+  { path: "/superadmin/events", element: <EventManagement />, roles: ['Superadmin'] },
+  { path: "/superadmin/payments", element: <PaymentAnalytics />, roles: ['Superadmin'] },
+  { path: "/superadmin/analytics", element: <PlatformAnalytics />, roles: ['Superadmin'] },
+  { path: "/superadmin/bank-templates", element: <BankTemplates />, roles: ['Superadmin'] },
+  { path: "/superadmin/advertisements", element: <AdvertisementManagement />, roles: ['Superadmin'] },
+  
+  // EventOrganizer specific routes
+  { path: "/events", element: <EventsTable />, roles: ['EventOrganizer'] },
+  { path: "/manage-participants", element: <ManageParticipants />, roles: ['EventOrganizer'] },
+  { path: "/engagement-analytics", element: <EngagementAnalytics />, roles: ['EventOrganizer'] },
+  { path: "/profile", element: <UserProfiles />, roles: ['EventOrganizer'] },
+  
+  // Common routes
+  { path: "/calendar", element: <Calendar />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/blank", element: <Blank />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/form-elements", element: <FormElements />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/basic-tables", element: <BasicTables />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/alerts", element: <Alerts />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/avatars", element: <Avatars />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/badge", element: <Badges />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/buttons", element: <Buttons />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/images", element: <Images />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/videos", element: <Videos />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/line-chart", element: <LineChart />, roles: ['EventOrganizer', 'Superadmin'] },
+  { path: "/bar-chart", element: <BarChart />, roles: ['EventOrganizer', 'Superadmin'] },
 ];
 
 export default function App() {
@@ -55,11 +77,17 @@ export default function App() {
         <Route path="/signup" element={<SignUp />} />
 
         <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
-          {protectedRoutes.map(({ path, element }) => (
+          {protectedRoutes.map(({ path, element, roles }) => (
             <Route
               key={path}
               path={path}
-              element={<AuthGuard>{element}</AuthGuard>}
+              element={
+                <AuthGuard>
+                  <RoleBasedRoute roles={roles || []}>
+                    {element}
+                  </RoleBasedRoute>
+                </AuthGuard>
+              }
             />
           ))}
         </Route>

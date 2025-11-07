@@ -776,3 +776,100 @@ span.flatpickr-weekday,
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
 }
+
+/* Custom Ant Design Table Styles for Dark Mode */
+.ant-table-wrapper {
+  @apply bg-transparent;
+}
+
+.ant-table-wrapper .ant-table {
+  @apply bg-white dark:bg-gray-900 rounded-lg;
+}
+
+.ant-table-wrapper .ant-table-container {
+  @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  @apply bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold text-sm px-4 py-3;
+  border-bottom: 1px solid theme('colors.gray.200') !important;
+  border-right: 1px solid theme('colors.gray.200') !important;
+}
+
+.dark .ant-table-wrapper .ant-table-thead > tr > th {
+  border-bottom: 1px solid theme('colors.gray.700') !important;
+  border-right: 1px solid theme('colors.gray.700') !important;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th:last-child {
+  border-right: none !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr {
+  @apply bg-white dark:bg-gray-900;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  @apply text-gray-800 dark:text-gray-200 px-4 py-3 bg-white dark:bg-gray-900;
+  border-bottom: 1px solid theme('colors.gray.200') !important;
+  border-right: 1px solid theme('colors.gray.200') !important;
+}
+
+.dark .ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom: 1px solid theme('colors.gray.700') !important;
+  border-right: 1px solid theme('colors.gray.700') !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td:last-child {
+  border-right: none !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+  @apply bg-gray-50 dark:bg-gray-800/50;
+}
+
+.ant-table-wrapper .ant-table-summary {
+  @apply bg-gray-50 dark:bg-gray-800;
+}
+
+.ant-table-wrapper .ant-table-pagination.ant-pagination {
+  @apply px-4 py-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700;
+}
+
+.ant-table-wrapper .ant-pagination-item {
+  @apply bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600;
+}
+
+.ant-table-wrapper .ant-pagination-item a {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+.ant-table-wrapper .ant-pagination-item-active {
+  @apply border-brand-500 dark:border-brand-500;
+}
+
+.ant-table-wrapper .ant-pagination-item-active a {
+  @apply text-brand-500 dark:text-brand-400;
+}
+
+.ant-table-wrapper .ant-pagination-prev,
+.ant-table-wrapper .ant-pagination-next {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+.ant-table-wrapper .ant-pagination-prev:hover,
+.ant-table-wrapper .ant-pagination-next:hover {
+  @apply text-brand-500 dark:text-brand-400;
+}
+
+.ant-table-wrapper .ant-select-selector {
+  @apply bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300;
+}
+
+.ant-table-wrapper .ant-input {
+  @apply bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300;
+}

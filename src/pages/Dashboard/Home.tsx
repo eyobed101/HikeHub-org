@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import EcommerceMetrics from "../../components/ecommerce/EcommerceMetrics";
 import MonthlySalesChart from "../../components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "../../components/ecommerce/StatisticsChart";
@@ -10,6 +11,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { Spin, Select, DatePicker, Space } from "antd";
 import { CalendarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { getUserRole } from "../../utils/userRole";
 
 const { RangePicker } = DatePicker;
 
@@ -50,14 +52,25 @@ interface DashboardStatistics {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [yearFilter, setYearFilter] = useState<number>(new Date().getFullYear());
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
 
   useEffect(() => {
-    fetchStatistics();
-  }, [yearFilter, dateRange]);
+    // Redirect Superadmin to their dashboard
+    const role = getUserRole();
+    if (role === 'Superadmin') {
+      navigate('/superadmin/dashboard-stats');
+      return;
+    }
+    
+    // Only fetch statistics for EventOrganizer
+    if (role === 'EventOrganizer') {
+      fetchStatistics();
+    }
+  }, [navigate, yearFilter, dateRange]);
 
   const fetchStatistics = async () => {
     try {
@@ -101,6 +114,11 @@ export default function Home() {
   });
 
   if (loading || !statistics) {
+    const role = getUserRole();
+    if (role === 'Superadmin') {
+      return null; // Will redirect
+    }
+    
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Spin size="large" />

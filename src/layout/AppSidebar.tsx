@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
 import {
-  
   ChevronDownIcon,
   GridIcon,
   GroupIcon,
@@ -11,98 +10,127 @@ import {
   ListIcon,
   PageIcon,
   PieChartIcon,
-
+  UserCircleIcon,
+  DollarLineIcon,
+  TableIcon,
+  BoxCubeIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
+import { getUserRole } from "../utils/userRole";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  roles?: ('Superadmin' | 'EventOrganizer' | 'Hiker')[];
 };
 
-const navItems: NavItem[] = [
+// EventOrganizer navigation items
+const organizerNavItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Statistics", path: "/", pro: false }],
+    subItems: [{ name: "Statistics", path: "/home", pro: false }],
+    roles: ['EventOrganizer']
   },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
   {
     icon: <ListIcon />,
     name: "Events",
     path: "/events",
+    roles: ['EventOrganizer']
   },
   {
     icon: <GroupIcon />,
     name: "Manage Participants",
     path: "/manage-participants",
+    roles: ['EventOrganizer']
   },
   {
     icon: <PieChartIcon />,
     name: "Engagement Analytics",
     path: "/engagement-analytics",
+    roles: ['EventOrganizer']
   },
   {
     icon: <PageIcon />,
     name: "Profile",
     path: "/profile",
+    roles: ['EventOrganizer']
   },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
 ];
 
-const othersItems: NavItem[] = [
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <PlugInIcon />,
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
-  // },
+// Superadmin navigation items
+const superadminNavItems: NavItem[] = [
+  {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/superadmin/dashboard-stats",
+    roles: ['Superadmin']
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "User Management",
+    path: "/superadmin/users",
+    roles: ['Superadmin']
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Organizer Management",
+    path: "/superadmin/organizers",
+    roles: ['Superadmin']
+  },
+  {
+    icon: <ListIcon />,
+    name: "Event Management",
+    path: "/superadmin/events",
+    roles: ['Superadmin']
+  },
+  {
+    icon: <DollarLineIcon />,
+    name: "Payment Management",
+    path: "/superadmin/payments",
+    roles: ['Superadmin']
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Platform Analytics",
+    path: "/superadmin/analytics",
+    roles: ['Superadmin']
+  },
+  {
+    icon: <TableIcon />,
+    name: "Bank Templates",
+    path: "/superadmin/bank-templates",
+    roles: ['Superadmin']
+  },
+  {
+    icon: <PageIcon />,
+    name: "Ad Management",
+    path: "/superadmin/advertisements",
+    roles: ['Superadmin']
+  },
 ];
+
+const othersItems: NavItem[] = [];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const userRole = getUserRole();
+
+  // Get navigation items based on role
+  const getNavItems = (): NavItem[] => {
+    if (userRole === 'Superadmin') {
+      return superadminNavItems;
+    } else if (userRole === 'EventOrganizer') {
+      return organizerNavItems;
+    }
+    return [];
+  };
+
+  const navItems = getNavItems();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";

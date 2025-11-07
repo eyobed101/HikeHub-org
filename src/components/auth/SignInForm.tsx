@@ -44,12 +44,22 @@ export default function SignInForm() {
         dispatch(login(response.data._id)); // Dispatch the login action with user data
         sessionStorage.setItem("accessToken", token); // Store user data in session storage
         
+        // Store user role
+        if (response.data.role) {
+          sessionStorage.setItem("userRole", response.data.role);
+        }
+        
         // Store organizer status if user is EventOrganizer
         if (response.data.role === 'EventOrganizer' && response.data.organizerStatus) {
           sessionStorage.setItem("organizerStatus", response.data.organizerStatus);
         }
 
-        navigate("/home"); // Redirect to the dashboard or desired route
+        // Redirect based on role
+        if (response.data.role === 'Superadmin') {
+          navigate("/superadmin/dashboard-stats");
+        } else {
+          navigate("/home");
+        }
       }
     } catch (error) {
       if (error.response) {
