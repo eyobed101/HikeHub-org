@@ -319,7 +319,7 @@ export default function UserMetaCard() {
           <div className="relative flex flex-col items-center w-full gap-6 xl:flex-row">
             <div className=" w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
               <img
-                src={organizerDetails.logo ? `http://localhost:3030/uploads/${organizerDetails.logo}` : "/images/user/owner.jpg"}
+                src={organizerDetails.logo ? `https://hikeapi.tripways.et/uploads/${organizerDetails.logo}` : "/images/user/owner.jpg"}
                 alt="user"
               />
               {organizerDetails.status === "Approved" && (

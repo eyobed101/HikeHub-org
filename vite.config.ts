@@ -20,19 +20,19 @@ export default defineConfig({
     port: 3000,                 // Optional: Custom port
     proxy: {
       '/api': {
-        target: 'http://localhost:3030',
+        target: 'https://hikeapi.tripways.et',
         changeOrigin: true,
         secure: false,
         ws: true, // Enable WebSocket proxying for Socket.IO
       },
       '/socket.io': {
-        target: 'http://localhost:3030',
+        target: 'https://hikeapi.tripways.et',
         changeOrigin: true,
         secure: false,
         ws: true, // Enable WebSocket proxying for Socket.IO
       },
       '/uploads': {
-        target: 'http://localhost:3030',
+        target: 'https://hikeapi.tripways.et',
         changeOrigin: true,
         secure: false,
       }

@@ -511,7 +511,7 @@ export default function EngagementAnalytics() {
                 <img
                   src={metrics.topPerformingEvent.multimedia[0].startsWith('http')
                     ? metrics.topPerformingEvent.multimedia[0]
-                    : `http://localhost:3030/uploads/${metrics.topPerformingEvent.multimedia[0]}`}
+                    : `https://hikeapi.tripways.et/uploads/${metrics.topPerformingEvent.multimedia[0]}`}
                   alt={metrics.topPerformingEvent.title}
                   className="w-full md:w-48 h-48 object-cover rounded-lg flex-shrink-0"
                 />

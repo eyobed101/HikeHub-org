@@ -135,7 +135,7 @@ export default function UserDropdown() {
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
           {userData.logo && !userData.logo.includes('default-logo') && !userData.logo.startsWith('http') ? (
             <img
-              src={`http://localhost:3030/uploads/${userData.logo}`}
+              src={`https://hikeapi.tripways.et/uploads/${userData.logo}`}
               alt="User"
               className="object-cover w-full h-full"
               onError={(e) => {
