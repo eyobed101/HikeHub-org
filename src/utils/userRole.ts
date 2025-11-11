@@ -59,3 +59,4 @@ export const isHiker = (): boolean => {
   return getUserRole() === 'Hiker';
 };
 
+
