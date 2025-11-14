@@ -30,6 +30,10 @@ export default defineConfig({
   server: {
     host: 'localhost',          // Ensure it runs on localhost
     port: 3000,                 // Optional: Custom port
+    allowedHosts: [
+      "a556f3900a29.ngrok-free.app",      // ← your ngrok domain
+      "5e701cc01a2b.ngrok-free.app"  // ← if you use this too
+    ],
     proxy: {
       '/api': {
         target: 'https://hikeapi.tripways.et',
