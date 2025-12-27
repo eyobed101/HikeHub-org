@@ -42,6 +42,20 @@ interface Event {
   price: number;
   status: string;
   images: string[];
+  description?: string;
+  itinerary?: string[];
+  maxParticipants?: number;
+  startDate?: string;
+  endDate?: string;
+  transportation?: string;
+  weatherCondition?: string;
+  multimedia?: string[];
+  type?: string;
+  level?: string;
+  categories?: any;
+  meetingPlace?: string;
+  meetingTime?: string;
+  announcement?: string;
 }
 
 export default function EventTable({ tableData, organizerStatus }: { tableData: Event[]; organizerStatus?: string | null }) {
@@ -71,7 +85,7 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
 
     // Ensure tableData is an array before filtering
     const eventsArray = Array.isArray(tableData) ? tableData : [];
-    
+
     // Filter the table data based on the search query
     const filtered = eventsArray.filter(
       (event) =>
@@ -102,14 +116,14 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
     description: "",
     location: "",
     distance: "",
-    itinerary: [],
+    itinerary: [] as string[],
     price: 0,
     maxParticipants: 0,
     startDate: "",
     endDate: "",
     transportation: "",
     weatherCondition: "",
-    images: [],
+    images: [] as any[],
     type: "",
     level: "",
     categories: "",
@@ -236,7 +250,7 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
       toast.error("Your profile is not approved. Please complete your profile before creating events.");
       return;
     }
-    
+
     setFormData({
       _id: "",  // Clear the form data
       title: "",
@@ -270,14 +284,14 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
 
     const formDataToSend = new FormData();
 
-    Object.keys(formData).forEach((key) => {
+    (Object.keys(formData) as (keyof typeof formData)[]).forEach((key) => {
       if (key === "images") {
         // Append files for the "images" field
         formData.images.forEach((image) => {
           formDataToSend.append("images", image.file); // Append the actual file
         });
       } else {
-        formDataToSend.append(key, formData[key]);
+        formDataToSend.append(key, formData[key] as any);
       }
     });
 
@@ -306,57 +320,57 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
 
           toast.error("Failed to update event. Please try again.");
         }
-        } else {
-          // Otherwise, create a new event
-          const response = await axiosInstance.post("event/create", formDataToSend,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-
-          if (response.status === 201) {
-            setRefresh(!refersh); // Trigger refersh
-
-            console.log("Event created successfully:", response.data);
-            setIsModalOpen(false);
-
-            toast.success("Event created successfully!");
-            
-            // Refresh organizer status after successful event creation
-            try {
-              const orgResponse = await axiosInstance.get("auth/organizer/detail");
-              if (orgResponse.data?.status) {
-                sessionStorage.setItem("organizerStatus", orgResponse.data.status);
-              }
-            } catch (err) {
-              console.error("Error refreshing organizer status:", err);
-            }
-          } else {
-            setIsModalOpen(false);
-
-            console.error("Failed to create event:", response.data);
-            toast.error("Failed to create event. Please try again.");
+      } else {
+        // Otherwise, create a new event
+        const response = await axiosInstance.post("event/create", formDataToSend,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
           }
-        }
-      } catch (error: any) {
-        setIsModalOpen(false);
-        console.error("Error creating event:", error);
-        
-        // Handle profile not approved error
-        if (error.response?.data?.businessErrorCode === 'PROFILE_NOT_APPROVED') {
-          toast.error(error.response.data.message || "Your profile is not approved. Please complete your profile.");
-          // Update organizer status in sessionStorage
-          if (error.response.data.organizerStatus) {
-            sessionStorage.setItem("organizerStatus", error.response.data.organizerStatus);
+        );
+
+        if (response.status === 201) {
+          setRefresh(!refersh); // Trigger refersh
+
+          console.log("Event created successfully:", response.data);
+          setIsModalOpen(false);
+
+          toast.success("Event created successfully!");
+
+          // Refresh organizer status after successful event creation
+          try {
+            const orgResponse = await axiosInstance.get("auth/organizer/detail");
+            if (orgResponse.data?.status) {
+              sessionStorage.setItem("organizerStatus", orgResponse.data.status);
+            }
+          } catch (err) {
+            console.error("Error refreshing organizer status:", err);
           }
         } else {
-          toast.error(error.response?.data?.message || "An error occurred while creating the event. Please try again.");
+          setIsModalOpen(false);
+
+          console.error("Failed to create event:", response.data);
+          toast.error("Failed to create event. Please try again.");
         }
-      } finally {
-        setLoading(false);
       }
+    } catch (error: any) {
+      setIsModalOpen(false);
+      console.error("Error creating event:", error);
+
+      // Handle profile not approved error
+      if (error.response?.data?.businessErrorCode === 'PROFILE_NOT_APPROVED') {
+        toast.error(error.response.data.message || "Your profile is not approved. Please complete your profile.");
+        // Update organizer status in sessionStorage
+        if (error.response.data.organizerStatus) {
+          sessionStorage.setItem("organizerStatus", error.response.data.organizerStatus);
+        }
+      } else {
+        toast.error(error.response?.data?.message || "An error occurred while creating the event. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditEvent = (event: Event) => {

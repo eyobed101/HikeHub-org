@@ -72,9 +72,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 {options.map((option, index) => (
                   <div
                     key={index}
-                    className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800 p-2 ${{
-                      "bg-primary/10": selectedOptions.includes(option.value),
-                    }}`}
+                    className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800 p-2 ${selectedOptions.includes(option.value) ? "bg-primary/10" : ""
+                      }`}
                   >
                     <Checkbox
                       label={option.text}
