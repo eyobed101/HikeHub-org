@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
+import { useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import {
     SendOutlined,
     PaperClipOutlined,
@@ -11,14 +11,13 @@ import {
 import {
     getChatMessages,
     sendMessage,
-    deleteMessage,
     markChatAsRead,
     type Chat,
     type Message,
     type PaginatedMessages,
 } from "../../services/api/chat";
 import { chatSocketService } from "../../services/socket/chatSocket";
-import { Button, Input, Upload, Popconfirm, Avatar, Tooltip } from "antd";
+import { Upload, Avatar } from "antd";
 
 interface ChatWindowProps {
     chat: Chat;
@@ -30,7 +29,6 @@ interface ChatWindowProps {
 export default function ChatWindow({ chat, onBack, currentUser, queryClient }: ChatWindowProps) {
     const [newMessageContent, setNewMessageContent] = useState("");
     const [isTyping, setIsTyping] = useState(false);
-    const [typingUser, setTypingUser] = useState<string | null>(null);
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [isSending, setIsSending] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -62,7 +60,6 @@ export default function ChatWindow({ chat, onBack, currentUser, queryClient }: C
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
-        isLoading: isLoadingMessages,
     } = useInfiniteQuery<PaginatedMessages>({
         queryKey: ["chatMessages", chat._id],
         queryFn: ({ pageParam = 1 }) => getChatMessages(chat._id, pageParam as number),
@@ -222,30 +219,22 @@ export default function ChatWindow({ chat, onBack, currentUser, queryClient }: C
         }
     };
 
-    const handleDeleteMessage = useMutation({
-        mutationFn: (messageId: string) => deleteMessage(messageId, chat._id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["chatMessages", chat._id] });
-            queryClient.invalidateQueries({ queryKey: ["userChats"] });
-        },
-    });
-
     const otherUser = chat.isGroupChat
         ? null
         : chat.users.find((user) => user._id !== currentUser?._id);
     const chatName = chat.isGroupChat ? chat.chatName : otherUser?.username || "Unknown";
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 dark:bg-boxdark-2">
+        <div className="flex flex-col h-full bg-transparent">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-boxdark border-b border-stroke dark:border-strokedark shadow-sm">
+            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-transparent border-b border-gray-200 dark:border-gray-800 shadow-sm">
                 <div className="flex items-center gap-3">
-                    <Button
-                        type="text"
-                        icon={<ArrowLeftOutlined />}
-                        className="md:hidden"
+                    <button
+                        className="md:hidden p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"
                         onClick={onBack}
-                    />
+                    >
+                        <ArrowLeftOutlined className="text-lg" />
+                    </button>
                     <Avatar
                         size="large"
                         className={chat.isGroupChat ? "bg-orange-500" : "bg-blue-500"}
@@ -253,7 +242,7 @@ export default function ChatWindow({ chat, onBack, currentUser, queryClient }: C
                         {chat.isGroupChat ? "G" : chatName.charAt(0).toUpperCase()}
                     </Avatar>
                     <div>
-                        <h3 className="font-semibold text-black dark:text-white">{chatName}</h3>
+                        <h3 className="font-semibold text-gray-800 dark:text-white/90">{chatName}</h3>
                         {isTyping && <span className="text-xs text-primary animate-pulse">Typing...</span>}
                     </div>
                 </div>
@@ -276,8 +265,8 @@ export default function ChatWindow({ chat, onBack, currentUser, queryClient }: C
                         >
                             <div
                                 className={`max-w-[75%] rounded-lg px-4 py-2 shadow-sm ${isMyMessage
-                                    ? 'bg-primary text-white rounded-br-none'
-                                    : 'bg-white dark:bg-meta-4 text-black dark:text-white rounded-bl-none'
+                                    ? 'bg-brand-500 text-white rounded-br-none'
+                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white/90 rounded-bl-none'
                                     }`}
                             >
                                 {msg.content.imagePath && (
@@ -306,48 +295,55 @@ export default function ChatWindow({ chat, onBack, currentUser, queryClient }: C
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-white dark:bg-boxdark border-t border-stroke dark:border-strokedark">
+            <div className="p-4 bg-white dark:bg-transparent border-t border-gray-200 dark:border-gray-800">
                 {selectedImage && (
-                    <div className="mb-2 flex items-center gap-2 bg-gray-100 dark:bg-meta-4 p-2 rounded">
+                    <div className="mb-2 flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded">
                         <PaperClipOutlined />
                         <span className="text-xs truncate max-w-[200px]">{selectedImage.name}</span>
-                        <Button
-                            size="small"
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
+                        <button
+                            className="p-1 ml-auto text-red-500 hover:text-red-700"
                             onClick={() => setSelectedImage(null)}
-                        />
+                        >
+                            <DeleteOutlined />
+                        </button>
                     </div>
                 )}
                 <div className="flex gap-2">
-                    <Upload
-                        beforeUpload={(file) => {
-                            setSelectedImage(file);
-                            return false;
-                        }}
-                        showUploadList={false}
-                        accept="image/*"
-                    >
-                        <Button icon={<PaperClipOutlined />} size="large" />
-                    </Upload>
+                    <div className="flex gap-2 items-center w-full">
+                        <Upload
+                            beforeUpload={(file) => {
+                                setSelectedImage(file);
+                                return false;
+                            }}
+                            showUploadList={false}
+                            accept="image/*"
+                        >
+                            <button className="p-2 transition-colors text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-white">
+                                <PaperClipOutlined className="text-xl" />
+                            </button>
+                        </Upload>
 
-                    <Input
-                        value={newMessageContent}
-                        onChange={onTyping}
-                        onPressEnter={handleSendMessage}
-                        placeholder="Type a message..."
-                        size="large"
-                        className="flex-1"
-                    />
+                        <input
+                            value={newMessageContent}
+                            onChange={onTyping}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSendMessage();
+                            }}
+                            placeholder="Type a message..."
+                            className="flex-1 rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 outline-none transition-all"
+                        />
 
-                    <Button
-                        type="primary"
-                        icon={isSending ? <LoadingOutlined /> : <SendOutlined />}
-                        size="large"
-                        onClick={handleSendMessage}
-                        disabled={!newMessageContent.trim() && !selectedImage}
-                    />
+                        <button
+                            onClick={handleSendMessage}
+                            disabled={!newMessageContent.trim() && !selectedImage}
+                            className={`p-3 rounded-lg flex items-center justify-center transition-all ${!newMessageContent.trim() && !selectedImage
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500"
+                                : "bg-brand-500 text-white hover:bg-brand-600 shadow-md"
+                                }`}
+                        >
+                            {isSending ? <LoadingOutlined /> : <SendOutlined />}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -4,8 +4,7 @@ import {
     PlusOutlined,
     SearchOutlined,
     CloseCircleOutlined,
-    TeamOutlined,
-    UserOutlined
+    TeamOutlined
 } from "@ant-design/icons";
 import {
     type Chat,
@@ -53,9 +52,9 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
     };
 
     return (
-        <div className="bg-white dark:bg-boxdark h-full flex flex-col border-r border-stroke dark:border-strokedark">
+        <div className="h-full flex flex-col border-r border-gray-200 dark:border-gray-800">
             {/* Header */}
-            <div className="p-4 border-b border-stroke dark:border-strokedark flex items-center justify-between">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 {isSearching ? (
                     <div className="relative flex-1">
                         <SearchOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -64,14 +63,14 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search users..."
-                            className="w-full bg-gray-100 dark:bg-meta-4 border-0 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
+                            className="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 pl-10"
                             autoFocus
                         />
                     </div>
                 ) : (
                     <div>
-                        <h2 className="text-lg font-semibold text-black dark:text-white">Messages</h2>
-                        <p className="text-xs text-gray-500">All your conversations</p>
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">Messages</h2>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">All your conversations</p>
                     </div>
                 )}
                 <button
@@ -79,7 +78,7 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
                         setIsSearching(!isSearching);
                         setSearchTerm("");
                     }}
-                    className="ml-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-meta-4 text-primary transition-colors"
+                    className="ml-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/[0.03] text-brand-500 transition-colors"
                 >
                     {isSearching ? <CloseCircleOutlined className="text-lg" /> : <PlusOutlined className="text-lg" />}
                 </button>
@@ -98,13 +97,13 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
                                 <div
                                     key={user._id}
                                     onClick={() => handleUserSelect(user)}
-                                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-meta-4 cursor-pointer transition-colors"
+                                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.03] cursor-pointer transition-colors"
                                 >
                                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold">
                                         {user.username.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium text-black dark:text-white text-sm truncate">
+                                        <h3 className="font-medium text-gray-800 dark:text-white/90 text-sm truncate">
                                             {user.username}
                                         </h3>
                                         <p className="text-xs text-gray-500 truncate">
@@ -153,8 +152,8 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
                                         key={chat._id}
                                         onClick={() => onChatSelect(chat)}
                                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${isSelected
-                                                ? 'bg-primary/10 dark:bg-primary/20'
-                                                : 'hover:bg-gray-100 dark:hover:bg-meta-4'
+                                            ? 'bg-brand-50 dark:bg-brand-500/10'
+                                            : 'hover:bg-gray-50 dark:hover:bg-white/[0.03]'
                                             }`}
                                     >
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${chat.isGroupChat ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
@@ -168,7 +167,7 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-baseline">
-                                                <h3 className={`font-semibold text-sm truncate ${isSelected ? 'text-primary' : 'text-black dark:text-white'}`}>
+                                                <h3 className={`font-semibold text-sm truncate ${isSelected ? 'text-brand-500 dark:text-brand-400' : 'text-gray-800 dark:text-white/90'}`}>
                                                     {chatDisplayName}
                                                 </h3>
                                                 <span className="text-xs text-gray-400 shrink-0 ml-2">
@@ -181,11 +180,11 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center mt-0.5">
-                                                <p className="text-xs text-gray-500 truncate pr-2">
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate pr-2">
                                                     {chat.latestMessage?.content?.text || (chat.latestMessage?.content?.imagePath ? 'Sent an image' : "No messages yet")}
                                                 </p>
                                                 {chat.unreadCount && chat.unreadCount > 0 ? (
-                                                    <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
+                                                    <span className="bg-brand-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
                                                         {chat.unreadCount}
                                                     </span>
                                                 ) : null}
@@ -197,7 +196,7 @@ export default function ChatList({ chats, isLoading, onChatSelect, currentUser, 
                         ) : (
                             <div className="text-center py-10">
                                 <TeamOutlined className="text-4xl text-gray-300 dark:text-gray-600 mb-2" />
-                                <h3 className="text-sm font-medium text-black dark:text-white">No Chats Yet</h3>
+                                <h3 className="text-sm font-medium text-gray-800 dark:text-white/90">No Chats Yet</h3>
                                 <p className="text-xs text-gray-500 mt-1">Start a conversation to see it here.</p>
                             </div>
                         )}

@@ -63,7 +63,7 @@ export default function ChatPage() {
     return (
         <>
             <PageMeta title="Messages - HikeHub" description="" />
-            <div className="flex h-[calc(100vh-120px)] overflow-hidden bg-white dark:bg-boxdark rounded-sm border border-stroke dark:border-strokedark shadow-default">
+            <div className="flex h-[calc(100dvh-120px)] overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] shadow-theme-xs">
                 {/* Chat List - Hidden on mobile if chat is selected */}
                 <div className={`w-full md:w-1/3 lg:w-1/4 ${selectedChat ? 'hidden md:block' : 'block'}`}>
                     <ChatList
