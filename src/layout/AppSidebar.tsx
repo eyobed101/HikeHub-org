@@ -75,7 +75,13 @@ const organizerNavItems: NavItem[] = [
     roles: ['EventOrganizer']
   },
   {
-    icon: <DollarLineIcon />, // Reusing DollarLineIcon as a placeholder for a bank icon
+    icon: <DollarLineIcon />,
+    name: "Finance Manager",
+    path: "/finance",
+    roles: ['EventOrganizer']
+  },
+  {
+    icon: <BankOutlined />,
     name: "Manual Bank",
     path: "/manual-bank",
     roles: ['EventOrganizer']
@@ -110,8 +116,8 @@ const superadminNavItems: NavItem[] = [
   },
   {
     icon: <DollarLineIcon />,
-    name: "Payment Management",
-    path: "/superadmin/payments",
+    name: "Finance Management",
+    path: "/superadmin/finance",
     roles: ['Superadmin']
   },
   {

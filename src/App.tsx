@@ -34,6 +34,8 @@ import { ToastContainer } from "react-toastify";
 import RoleBasedRoute from "./components/common/RoleBasedRoute";
 import ChatPage from "./pages/ChatPage/ChatPage";
 import ManualBankPage from "./pages/ManualBank/ManualBankPage";
+import FinancePage from "./pages/Finance/FinancePage";
+import SuperAdminFinance from "./pages/Superadmin/Finance/SuperAdminFinance";
 
 const protectedRoutes = [
   // Role-based dashboard routes
@@ -46,7 +48,10 @@ const protectedRoutes = [
   { path: "/superadmin/payments", element: <PaymentAnalytics />, roles: ['Superadmin'] },
   { path: "/superadmin/analytics", element: <PlatformAnalytics />, roles: ['Superadmin'] },
   { path: "/superadmin/bank-templates", element: <BankTemplates />, roles: ['Superadmin'] },
+  // { path: "/superadmin/bank-templates", element: <BankTemplates />, roles: ['Superadmin'] }, // Removed duplicate
+
   { path: "/superadmin/advertisements", element: <AdvertisementManagement />, roles: ['Superadmin'] },
+  { path: "/superadmin/finance", element: <SuperAdminFinance />, roles: ['Superadmin'] },
 
   // EventOrganizer specific routes
   { path: "/events", element: <EventsTable />, roles: ['EventOrganizer'] },
@@ -55,6 +60,7 @@ const protectedRoutes = [
   { path: "/profile", element: <UserProfiles />, roles: ['EventOrganizer'] },
   { path: "/messages", element: <ChatPage />, roles: ['EventOrganizer'] },
   { path: "/manual-bank", element: <ManualBankPage />, roles: ['EventOrganizer'] },
+  { path: "/finance", element: <FinancePage />, roles: ['EventOrganizer'] },
 
   // Common routes
   { path: "/calendar", element: <Calendar />, roles: ['EventOrganizer', 'Superadmin'] },
