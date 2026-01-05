@@ -33,9 +33,7 @@ import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
 import RoleBasedRoute from "./components/common/RoleBasedRoute";
 import ChatPage from "./pages/ChatPage/ChatPage";
-import ManualBankPage from "./pages/ManualBank/ManualBankPage";
-import FinancePage from "./pages/Finance/FinancePage";
-import PaymentVerificationPage from "./pages/Finance/PaymentVerificationPage";
+import FinanceManager from "./pages/Finance/FinanceManager";
 import SuperAdminFinance from "./pages/Superadmin/Finance/SuperAdminFinance";
 
 const protectedRoutes = [
@@ -60,9 +58,7 @@ const protectedRoutes = [
   { path: "/engagement-analytics", element: <EngagementAnalytics />, roles: ['EventOrganizer'] },
   { path: "/profile", element: <UserProfiles />, roles: ['EventOrganizer'] },
   { path: "/messages", element: <ChatPage />, roles: ['EventOrganizer'] },
-  { path: "/manual-bank", element: <ManualBankPage />, roles: ['EventOrganizer'] },
-  { path: "/finance", element: <FinancePage />, roles: ['EventOrganizer'] },
-  { path: "/payment-verifier", element: <PaymentVerificationPage />, roles: ['EventOrganizer'] },
+  { path: "/finance", element: <FinanceManager />, roles: ['EventOrganizer'] },
 
   // Common routes
   { path: "/calendar", element: <Calendar />, roles: ['EventOrganizer', 'Superadmin'] },

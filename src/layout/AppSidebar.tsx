@@ -21,9 +21,7 @@ import {
   CalendarOutlined,
   TeamOutlined,
   ProfileOutlined,
-  SettingOutlined,
-  BankOutlined,
-  CheckCircleOutlined
+  SettingOutlined
 } from "@ant-design/icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -77,20 +75,8 @@ const organizerNavItems: NavItem[] = [
   },
   {
     icon: <DollarLineIcon />,
-    name: "Finance Manager",
+    name: "Finance & Payments",
     path: "/finance",
-    roles: ['EventOrganizer']
-  },
-  {
-    icon: <CheckCircleOutlined />,
-    name: "Payment Verifier",
-    path: "/payment-verifier",
-    roles: ['EventOrganizer']
-  },
-  {
-    icon: <BankOutlined />,
-    name: "Manual Bank",
-    path: "/manual-bank",
     roles: ['EventOrganizer']
   },
 ];
