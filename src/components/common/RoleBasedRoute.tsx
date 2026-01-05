@@ -1,7 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import { getUserRole } from '../../utils/userRole';
 
 interface RoleBasedRouteProps {
     roles: string[];
@@ -9,15 +8,16 @@ interface RoleBasedRouteProps {
 }
 
 const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({ roles, children }) => {
-    const { user } = useSelector((state: RootState) => state.auth);
+    const userRole = getUserRole();
+    const token = sessionStorage.getItem('accessToken');
 
-    // If no user is logged in, redirect to signin
-    if (!user) {
+    // If no user is logged in (no token), redirect to signin
+    if (!token) {
         return <Navigate to="/signin" replace />;
     }
 
     // If user's role is not in the allowed roles, redirect to home or unauthorized page
-    if (roles.length > 0 && !roles.includes(user.role)) {
+    if (roles.length > 0 && userRole && !roles.includes(userRole)) {
         return <Navigate to="/" replace />;
     }
 

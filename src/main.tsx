@@ -15,32 +15,33 @@ import { ToastContainer } from "react-toastify";
 
 
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
-    <ToastContainer
-      position="top-left"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      style={{ zIndex: 9999 }} />
-    <StrictMode>
-      <ThemeProvider>
-        <AppWrapper>
-          <AuthProvider>
-
-            <Router> 
-
+    <QueryClientProvider client={queryClient}>
+      <ToastContainer
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }} />
+      <StrictMode>
+        <ThemeProvider>
+          <AppWrapper>
+            <AuthProvider>
               <App />
-
-            </Router>
-          </AuthProvider>
-        </AppWrapper>
-      </ThemeProvider>
-    </StrictMode>
+            </AuthProvider>
+          </AppWrapper>
+        </ThemeProvider>
+      </StrictMode>
+    </QueryClientProvider>
   </Provider>
 );

@@ -32,6 +32,7 @@ import EngagementAnalytics from "./pages/Events/EngagementAnalytics";
 import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
 import RoleBasedRoute from "./components/common/RoleBasedRoute";
+import ChatPage from "./pages/ChatPage/ChatPage";
 
 const protectedRoutes = [
   // Role-based dashboard routes
@@ -45,13 +46,14 @@ const protectedRoutes = [
   { path: "/superadmin/analytics", element: <PlatformAnalytics />, roles: ['Superadmin'] },
   { path: "/superadmin/bank-templates", element: <BankTemplates />, roles: ['Superadmin'] },
   { path: "/superadmin/advertisements", element: <AdvertisementManagement />, roles: ['Superadmin'] },
-  
+
   // EventOrganizer specific routes
   { path: "/events", element: <EventsTable />, roles: ['EventOrganizer'] },
   { path: "/manage-participants", element: <ManageParticipants />, roles: ['EventOrganizer'] },
   { path: "/engagement-analytics", element: <EngagementAnalytics />, roles: ['EventOrganizer'] },
   { path: "/profile", element: <UserProfiles />, roles: ['EventOrganizer'] },
-  
+  { path: "/messages", element: <ChatPage />, roles: ['EventOrganizer'] },
+
   // Common routes
   { path: "/calendar", element: <Calendar />, roles: ['EventOrganizer', 'Superadmin'] },
   { path: "/blank", element: <Blank />, roles: ['EventOrganizer', 'Superadmin'] },
@@ -71,7 +73,7 @@ export default function App() {
   return (
     <Router>
       <ScrollToTop />
-     
+
       <Routes>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
@@ -94,7 +96,7 @@ export default function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-      
+
     </Router>
   );
 }
