@@ -35,6 +35,7 @@ import RoleBasedRoute from "./components/common/RoleBasedRoute";
 import ChatPage from "./pages/ChatPage/ChatPage";
 import ManualBankPage from "./pages/ManualBank/ManualBankPage";
 import FinancePage from "./pages/Finance/FinancePage";
+import PaymentVerificationPage from "./pages/Finance/PaymentVerificationPage";
 import SuperAdminFinance from "./pages/Superadmin/Finance/SuperAdminFinance";
 
 const protectedRoutes = [
@@ -61,6 +62,7 @@ const protectedRoutes = [
   { path: "/messages", element: <ChatPage />, roles: ['EventOrganizer'] },
   { path: "/manual-bank", element: <ManualBankPage />, roles: ['EventOrganizer'] },
   { path: "/finance", element: <FinancePage />, roles: ['EventOrganizer'] },
+  { path: "/payment-verifier", element: <PaymentVerificationPage />, roles: ['EventOrganizer'] },
 
   // Common routes
   { path: "/calendar", element: <Calendar />, roles: ['EventOrganizer', 'Superadmin'] },

@@ -22,7 +22,8 @@ import {
   TeamOutlined,
   ProfileOutlined,
   SettingOutlined,
-  BankOutlined
+  BankOutlined,
+  CheckCircleOutlined
 } from "@ant-design/icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -78,6 +79,12 @@ const organizerNavItems: NavItem[] = [
     icon: <DollarLineIcon />,
     name: "Finance Manager",
     path: "/finance",
+    roles: ['EventOrganizer']
+  },
+  {
+    icon: <CheckCircleOutlined />,
+    name: "Payment Verifier",
+    path: "/payment-verifier",
     roles: ['EventOrganizer']
   },
   {
