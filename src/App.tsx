@@ -33,6 +33,7 @@ import AuthGuard from "./auth/AuthGuard";
 import { ToastContainer } from "react-toastify";
 import RoleBasedRoute from "./components/common/RoleBasedRoute";
 import ChatPage from "./pages/ChatPage/ChatPage";
+import ManualBankPage from "./pages/ManualBank/ManualBankPage";
 
 const protectedRoutes = [
   // Role-based dashboard routes
@@ -53,6 +54,7 @@ const protectedRoutes = [
   { path: "/engagement-analytics", element: <EngagementAnalytics />, roles: ['EventOrganizer'] },
   { path: "/profile", element: <UserProfiles />, roles: ['EventOrganizer'] },
   { path: "/messages", element: <ChatPage />, roles: ['EventOrganizer'] },
+  { path: "/manual-bank", element: <ManualBankPage />, roles: ['EventOrganizer'] },
 
   // Common routes
   { path: "/calendar", element: <Calendar />, roles: ['EventOrganizer', 'Superadmin'] },

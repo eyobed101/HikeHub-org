@@ -16,6 +16,14 @@ import {
   BoxCubeIcon,
   ChatIcon,
 } from "../icons";
+import {
+  AppstoreOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  ProfileOutlined,
+  SettingOutlined,
+  BankOutlined
+} from "@ant-design/icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 import { getUserRole } from "../utils/userRole";
@@ -64,6 +72,12 @@ const organizerNavItems: NavItem[] = [
     icon: <ChatIcon />,
     name: "Messages",
     path: "/messages",
+    roles: ['EventOrganizer']
+  },
+  {
+    icon: <DollarLineIcon />, // Reusing DollarLineIcon as a placeholder for a bank icon
+    name: "Manual Bank",
+    path: "/manual-bank",
     roles: ['EventOrganizer']
   },
 ];
