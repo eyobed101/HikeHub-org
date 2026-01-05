@@ -25,11 +25,11 @@ interface MetricsProps {
 // Always returns integers (no decimals)
 const formatNumber = (value: number): string => {
   const integerValue = Math.round(value);
-  
+
   if (integerValue >= 10000) {
     return integerValue.toLocaleString('en-US') + '+';
   }
-  
+
   return integerValue.toLocaleString('en-US');
 };
 
@@ -134,7 +134,7 @@ export default function EcommerceMetrics({ metrics, netBalance }: MetricsProps) 
                 Net Balance
               </span>
               <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                ${netBalance.totalOrganizerAmount.toFixed(2)}
+                {netBalance.totalOrganizerAmount.toFixed(2)} ETB
               </h4>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 After commission
@@ -160,7 +160,7 @@ export default function EcommerceMetrics({ metrics, netBalance }: MetricsProps) 
                 Commission Deducted
               </span>
               <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                ${netBalance.totalCommissionAmount.toFixed(2)}
+                {netBalance.totalCommissionAmount.toFixed(2)} ETB
               </h4>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Platform fee

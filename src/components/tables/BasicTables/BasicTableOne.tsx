@@ -29,6 +29,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Spin } from "antd";
 import { shortenUrl, isValidUrl, formatUrl } from "../../../utils/urlShortener";
+import ItineraryMultiSelect from "./ItineraryMultiSelect ";
 
 interface Event {
   _id: string;
@@ -473,7 +474,7 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
                     </Badge>
                   </TableCell>
                   <TableCell className="px-5 py-4 text-gray-800 dark:text-gray-400">
-                    ${event.price.toFixed(2)}
+                    {event.price.toFixed(2)} ETB
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex gap-2">
@@ -564,15 +565,7 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
                     <div>
                       <Label>Location</Label>
                       <Input name="location" type="text" value={formData.location} onChange={handleInputChange} />
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          window.open("https://www.google.com/maps", "_blank");
-                        }}
-                        className="px-4 py-2 mt-2 mt-2text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-                      >
-                        Open Google Maps
-                      </Button>
+
                     </div>
                     <div>
                       <Label>Distance</Label>
@@ -586,19 +579,19 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
                           <div className="space-y-1.5 text-xs">
                             <div className="flex justify-between items-center">
                               <span className="text-gray-600 dark:text-gray-400">Event Price:</span>
-                              <span className="font-semibold text-gray-800 dark:text-gray-200">${parseFloat(formData.price.toString() || '0').toFixed(2)}</span>
+                              <span className="font-semibold text-gray-800 dark:text-gray-200">{parseFloat(formData.price.toString() || '0').toFixed(2)} ETB</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-gray-600 dark:text-gray-400">Commission ({commissionRate}%):</span>
                               <span className="font-semibold text-red-600 dark:text-red-400">
-                                -${((parseFloat(formData.price.toString() || '0') * commissionRate) / 100).toFixed(2)}
+                                -{((parseFloat(formData.price.toString() || '0') * commissionRate) / 100).toFixed(2)} ETB
                               </span>
                             </div>
                             <div className="pt-1.5 border-t border-blue-200 dark:border-blue-700">
                               <div className="flex justify-between items-center">
                                 <span className="font-medium text-gray-700 dark:text-gray-300">You Will Receive:</span>
                                 <span className="font-bold text-green-600 dark:text-green-400 text-sm">
-                                  ${(parseFloat(formData.price.toString() || '0') - (parseFloat(formData.price.toString() || '0') * commissionRate) / 100).toFixed(2)}
+                                  {(parseFloat(formData.price.toString() || '0') - (parseFloat(formData.price.toString() || '0') * commissionRate) / 100).toFixed(2)} ETB
                                 </span>
                               </div>
                             </div>
@@ -723,24 +716,11 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
                       <Label>Announcement</Label>
                       <Input name="announcement" type="text" value={formData.announcement} onChange={handleInputChange} />
                     </div>
-                    <div>
-
-                      <MultiSelect
+                    {/* Replace the existing itinerary MultiSelect section */}
+                    <div className="lg:col-span-2"> {/* Takes full width on large screens */}
+                      <ItineraryMultiSelect
                         label="Itinerary"
-                        options={[
-                          { value: "Campfire", text: "Campfire", selected: false },
-                          { value: "Lunch and Dinner", text: "Lunch and Dinner", selected: false },
-                          { value: "Sleeping Bag", text: "Sleeping Bag", selected: false },
-                          { value: "Guided Hike", text: "Guided Hike", selected: false },
-                          { value: "First Aid Support", text: "First Aid Support", selected: false },
-                          { value: "Water Refill Station", text: "Water Refill Station", selected: false },
-                          { value: "Trail Map and Compass", text: "Trail Map and Compass", selected: false },
-                          { value: "Wildlife Awareness Briefing", text: "Wildlife Awareness Briefing", selected: false },
-                          { value: "Emergency Contact Setup", text: "Emergency Contact Setup", selected: false },
-                          { value: "Photography Session", text: "Photography Session", selected: false }
-                        ]}
-                        // defaultSelected={formData.itinerary}
-                        defaultSelected={[]}
+                        value={formData.itinerary}
                         onChange={(selected) => {
                           setFormData((prev) => ({ ...prev, itinerary: selected }));
                         }}
