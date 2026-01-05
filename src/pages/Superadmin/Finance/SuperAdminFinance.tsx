@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSuperAdminRevenueReport, settleSuperAdminReport, RevenueReport } from '../../../services/api/finance';
 import PageMeta from '../../../components/common/PageMeta';
+import PageBreadcrumb from '../../../components/common/PageBreadCrumb';
 import { Tabs, Tag, Table, Button, message, Popconfirm, Card, Statistic } from 'antd';
-import { CheckCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, SyncOutlined, DollarOutlined, TransactionOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -119,34 +120,42 @@ export default function SuperAdminFinance() {
     ];
 
     return (
-        <div className="p-6">
-            <PageMeta title="Finance Management | SuperAdmin" />
-            <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Finance Management</h1>
+        <>
+            <PageMeta title="HikeHub | Finance Management" description="Superadmin Finance Dashboard" />
+            <PageBreadcrumb pageTitle="Finance Management" />
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6 shadow-theme-xs">
+                <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                        Finance Dashboard
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Manage commissions (collections) and organizer payouts.
+                    </p>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card>
-                    <Statistic title="Total Volume" value={filteredReports.length} />
-                </Card>
-                <Card>
-                    <Statistic
-                        title={`Total ${activeTab === 'collections' ? 'Commissions' : 'Payouts'}`}
-                        value={totalAmount}
-                        precision={2}
-                        suffix="ETB"
-                        valueStyle={{ color: activeTab === 'collections' ? '#3f8600' : '#cf1322' }}
-                    />
-                </Card>
-                <Card>
-                    <Statistic
-                        title="Pending Settlement"
-                        value={pendingAmount}
-                        precision={2}
-                        suffix="ETB"
-                    />
-                </Card>
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card bordered={false} className="shadow-sm rounded-xl bg-gray-50 dark:bg-white/[0.05]">
+                        <Statistic title="Total Volume" value={filteredReports.length} />
+                    </Card>
+                    <Card bordered={false} className="shadow-sm rounded-xl bg-gray-50 dark:bg-white/[0.05]">
+                        <Statistic
+                            title={`Total ${activeTab === 'collections' ? 'Commissions' : 'Payouts'}`}
+                            value={totalAmount}
+                            precision={2}
+                            suffix="ETB"
+                            valueStyle={{ color: activeTab === 'collections' ? '#3f8600' : '#cf1322' }}
+                        />
+                    </Card>
+                    <Card bordered={false} className="shadow-sm rounded-xl bg-gray-50 dark:bg-white/[0.05]">
+                        <Statistic
+                            title="Pending Settlement"
+                            value={pendingAmount}
+                            precision={2}
+                            suffix="ETB"
+                        />
+                    </Card>
+                </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                 <Tabs
                     activeKey={activeTab}
                     onChange={(key) => setActiveTab(key as any)}
@@ -156,17 +165,29 @@ export default function SuperAdminFinance() {
                             label: 'Collections (Commissions)',
                             children: (
                                 <>
-                                    <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
-                                        <p className="text-green-800 dark:text-green-200">
-                                            <strong>Manual/Bank Payments</strong>: Organizers hold these funds. They owe you the commission.
-                                            Mark as <strong>Settled</strong> when you receive payment from them.
-                                        </p>
+                                    <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-800/30">
+                                        <div className="flex items-start gap-3">
+                                            <div className="p-2 bg-green-100 dark:bg-green-800 rounded-full text-green-600 dark:text-green-200">
+                                                <DollarOutlined />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-1">
+                                                    Manual/Bank Payments
+                                                </h4>
+                                                <p className="text-sm text-green-700 dark:text-green-300">
+                                                    Organizers hold these funds. They owe you the commission.
+                                                    Mark as <strong>Settled</strong> when you receive payment from them.
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                     <Table
                                         dataSource={filteredReports}
                                         columns={columns}
                                         loading={isLoading}
                                         rowKey="_id"
+                                        scroll={{ x: true }}
+                                        pagination={{ pageSize: 10 }}
                                     />
                                 </>
                             )
@@ -176,17 +197,29 @@ export default function SuperAdminFinance() {
                             label: 'Payouts (Due to Organizers)',
                             children: (
                                 <>
-                                    <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
-                                        <p className="text-red-800 dark:text-red-200">
-                                            <strong>Online (Chapa) Payments</strong>: You hold these funds. You owe the net amount to Organizers.
-                                            Transfer funds to them. <strong>They</strong> will mark it as Settled upon receipt.
-                                        </p>
+                                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-800/30">
+                                        <div className="flex items-start gap-3">
+                                            <div className="p-2 bg-red-100 dark:bg-red-800 rounded-full text-red-600 dark:text-red-200">
+                                                <TransactionOutlined />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
+                                                    Online (Chapa) Payments
+                                                </h4>
+                                                <p className="text-sm text-red-700 dark:text-red-300">
+                                                    You hold these funds. You owe the net amount to Organizers.
+                                                    Transfer funds to them. <strong>They</strong> will mark it as Settled upon receipt.
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                     <Table
                                         dataSource={filteredReports}
                                         columns={columns}
                                         loading={isLoading}
                                         rowKey="_id"
+                                        scroll={{ x: true }}
+                                        pagination={{ pageSize: 10 }}
                                     />
                                 </>
                             )
@@ -194,6 +227,6 @@ export default function SuperAdminFinance() {
                     ]}
                 />
             </div>
-        </div>
+        </>
     );
 }
