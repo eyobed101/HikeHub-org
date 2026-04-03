@@ -8,7 +8,7 @@ const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     // If not authenticated, redirect to signin
-    if (!isAuthenticateda) {
+    if (!isAuthenticated) {
       navigate("/signin");
     }
   }, [isAuthenticated, navigate]); // Rerun the effect if isAuthenticated changes

@@ -11,36 +11,39 @@ import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter as Router } from "react-router-dom"; // Correct import
 import store, { persistor } from './store/store';
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import { ToastContainer } from "react-toastify";
 
 
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
-    <ToastContainer
-      position="top-left"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      style={{ zIndex: 9999 }} />
-    <StrictMode>
-      <ThemeProvider>
-        <AppWrapper>
-          <AuthProvider>
+    <PersistGate loading={null} persistor={persistor}>
+      <ToastContainer
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }} />
+      <StrictMode>
+        <ThemeProvider>
+          <AppWrapper>
+            <AuthProvider>
 
-            <Router> 
+              <Router> 
 
-              <App />
+                <App />
 
-            </Router>
-          </AuthProvider>
-        </AppWrapper>
-      </ThemeProvider>
-    </StrictMode>
+              </Router>
+            </AuthProvider>
+          </AppWrapper>
+        </ThemeProvider>
+      </StrictMode>
+    </PersistGate>
   </Provider>
 );

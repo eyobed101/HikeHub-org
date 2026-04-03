@@ -16,6 +16,7 @@ import {
 // Persist configuration
 const persistConfig = {
   key: 'root', // Key for the persisted state
+  version: 1,
   storage,
 };
 
