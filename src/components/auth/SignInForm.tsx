@@ -31,7 +31,11 @@ export default function SignInForm() {
       });
       if (response.status === 200) {
         resetRefreshFailed();
-        dispatch(login(response.data._id));
+        dispatch(login({
+          id: response.data._id,
+          name: response.data.user?.username ?? response.data.username ?? "",
+          email: response.data.user?.email ?? "",
+        }));
         sessionStorage.setItem("accessToken", response.data.token);
         if (response.data.role) {
           sessionStorage.setItem("userRole", response.data.role);
@@ -43,7 +47,7 @@ export default function SignInForm() {
         }
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Google sign-in failed. Please try again.");
+      toast.error(error.response?.data?.message || error.message || "Google sign-in failed. Please try again.");
     }
   };
 
@@ -74,7 +78,7 @@ export default function SignInForm() {
         // Reset refresh failed flag on successful login
         resetRefreshFailed();
 
-        dispatch(login(response.data._id)); // Dispatch the login action with user data
+        dispatch(login({ id: response.data._id, name: response.data.user?.username ?? "", email: response.data.user?.email ?? "" }));
         sessionStorage.setItem("accessToken", token); // Store user data in session storage
         
         // Store user role
