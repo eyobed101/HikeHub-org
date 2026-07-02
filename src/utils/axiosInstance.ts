@@ -165,7 +165,8 @@ axiosInstance.interceptors.request.use(
       'auth/verify-otp',
       'auth/org/register',
       'auth/hiker/register',
-      'auth/super/register'
+      'auth/super/register',
+      'auth/google'
     ];
     
     // Check if this is a public endpoint

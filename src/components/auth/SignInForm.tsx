@@ -8,6 +8,8 @@ import { useDispatch } from "react-redux";
 import { login } from "../../store/authSlice";
 import axiosInstance, { resetRefreshFailed } from "../../utils/axiosInstance"; // Import axios instance
 import { Link, useNavigate } from "react-router";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { toast } from "react-toastify";
 
 
 export default function SignInForm() {
@@ -17,6 +19,37 @@ export default function SignInForm() {
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      toast.error("No credential returned from Google. Please try again.");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post("auth/google", {
+        credential: credentialResponse.credential,
+      });
+      if (response.status === 200) {
+        resetRefreshFailed();
+        dispatch(login(response.data._id));
+        sessionStorage.setItem("accessToken", response.data.token);
+        if (response.data.role) {
+          sessionStorage.setItem("userRole", response.data.role);
+        }
+        if (response.data.role === "Superadmin") {
+          navigate("/superadmin/dashboard-stats");
+        } else {
+          navigate("/home");
+        }
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Google sign-in failed. Please try again.");
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error("Google sign-in was cancelled or failed.");
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,6 +185,25 @@ export default function SignInForm() {
                 </span>
               </div>
             </div> */}
+            <div className="mb-4">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                size="large"
+                width="100%"
+                text="signin_with"
+              />
+            </div>
+            <div className="relative py-3 sm:py-5 mb-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
+                  Or
+                </span>
+              </div>
+            </div>
             <form onSubmit={handleSignIn}>
               <div className="space-y-6">
                 <div>
