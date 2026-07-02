@@ -28,8 +28,17 @@ export default function SignInForm() {
     try {
       const response = await axiosInstance.post("auth/google", {
         credential: credentialResponse.credential,
+        intent: "organizer",   // tells backend this request is from the org web app
       });
       if (response.status === 200) {
+        const { role } = response.data;
+
+        // This app is for organizers and admins only
+        if (role !== "EventOrganizer" && role !== "Superadmin") {
+          toast.error("This portal is for Event Organizers only. Please use the HikeHub app instead.");
+          return;
+        }
+
         resetRefreshFailed();
         dispatch(login({
           id: response.data._id,
@@ -37,10 +46,8 @@ export default function SignInForm() {
           email: response.data.user?.email ?? "",
         }));
         sessionStorage.setItem("accessToken", response.data.token);
-        if (response.data.role) {
-          sessionStorage.setItem("userRole", response.data.role);
-        }
-        if (response.data.role === "Superadmin") {
+        sessionStorage.setItem("userRole", role);
+        if (role === "Superadmin") {
           navigate("/superadmin/dashboard-stats");
         } else {
           navigate("/home");

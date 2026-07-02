@@ -16,9 +16,9 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({ roles, children }) => {
         return <Navigate to="/signin" replace />;
     }
 
-    // If user's role is not in the allowed roles, redirect to home or unauthorized page
+    // If user's role is not in the allowed roles, redirect to signin
     if (roles.length > 0 && userRole && !roles.includes(userRole)) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/signin" replace />;
     }
 
     // If user has the required role, render the children
