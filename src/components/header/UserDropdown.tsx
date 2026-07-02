@@ -6,224 +6,104 @@ import { Link } from "react-router";
 import { logout } from "../../store/authSlice";
 import axiosInstance from "../../utils/axiosInstance";
 import { performLogout } from "../../utils/logout";
-import { getUserRole, getUserId } from "../../utils/userRole";
-
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [userData, setUserData] = useState({
-    organizer: { username: "", email: "" },
-    companyName: "",
-    logo: "",
-  });
+  const [companyName, setCompanyName] = useState("");
   const dispatch = useDispatch();
+  const { user, displayName, avatarUrl } = useCurrentUser();
 
-  const handleSignOut = async () => {
-    performLogout();
-    dispatch(logout());
-  };
-
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
-
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
+  // Fetch company name separately (organizer detail)
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userRole = getUserRole();
-        const userId = getUserId();
+    if (user?.role === "EventOrganizer") {
+      axiosInstance.get("auth/organizer/detail")
+        .then(res => { if (res.data?.companyName) setCompanyName(res.data.companyName); })
+        .catch(() => {});
+    }
+  }, [user?.role]);
 
-        if (userRole === 'Superadmin') {
-          // For Superadmin, fetch user details using superadmin endpoint
-          if (userId) {
-            try {
-              const response = await axiosInstance.get(`superadmin/users/${userId}`);
-              if (response.data.status === 1 && response.data.data) {
-                const user = response.data.data;
-                setUserData({
-                  organizer: {
-                    username: user.username || "Superadmin",
-                    email: user.email || "N/A",
-                  },
-                  companyName: "Superadmin",
-                  logo: user.profilePicture || "default-logo.jpg",
-                });
-                return;
-              }
-            } catch (error) {
-              console.error("Error fetching superadmin data:", error);
-            }
-          }
-          // Fallback for Superadmin
-          setUserData({
-            organizer: {
-              username: "Superadmin",
-              email: "admin@hikehub.com",
-            },
-            companyName: "Superadmin",
-            logo: "default-logo.jpg",
-          });
-        } else if (userRole === 'EventOrganizer') {
-          // For EventOrganizer, fetch organizer details
-          const response = await axiosInstance.get("auth/organizer/detail");
-          const data = response.data;
-          if (data) {
-            setUserData({
-              organizer: {
-                username: data.organizer?.username || "N/A",
-                email: data.organizer?.email || "N/A",
-              },
-              companyName: data.companyName || "N/A",
-              logo: data.logo || "default-logo.jpg",
-            });
-          }
-        } else {
-          // For Hiker or other roles, use profile endpoint
-          try {
-            const response = await axiosInstance.get("auth/profile");
-            if (response.data.success && response.data.data) {
-              const profile = response.data.data;
-              setUserData({
-                organizer: {
-                  username: `${profile.firstname || ''} ${profile.lastname || ''}`.trim() || "User",
-                  email: "N/A",
-                },
-                companyName: "Hiker",
-                logo: profile.profilePicture || "default-logo.jpg",
-              });
-            }
-          } catch (error) {
-            console.error("Error fetching profile:", error);
-            // Fallback
-            setUserData({
-              organizer: {
-                username: "User",
-                email: "N/A",
-              },
-              companyName: "User",
-              logo: "default-logo.jpg",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        // Fallback
-        setUserData({
-          organizer: {
-            username: "User",
-            email: "N/A",
-          },
-          companyName: "User",
-          logo: "default-logo.jpg",
-        });
-      }
-    };
+  const handleSignOut = () => { performLogout(); dispatch(logout()); };
 
-    fetchUserData();
-  }, []);
+  // Resolve avatar: could be a full URL (Google) or a relative uploads path
+  const resolvedAvatar = avatarUrl
+    ? (avatarUrl.startsWith("http") ? avatarUrl : `https://hikeapi.tripways.et/uploads/${avatarUrl}`)
+    : null;
+
+  const initials = displayName.charAt(0).toUpperCase() || "U";
 
   return (
     <div className="relative">
       <button
-        onClick={toggleDropdown}
+        onClick={() => setIsOpen(v => !v)}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          {userData.logo && !userData.logo.includes('default-logo') && !userData.logo.startsWith('http') ? (
+        <span className="mr-3 overflow-hidden rounded-full h-11 w-11 shrink-0">
+          {resolvedAvatar ? (
             <img
-              src={`https://hikeapi.tripways.et/uploads/${userData.logo}`}
+              src={resolvedAvatar}
               alt="User"
               className="object-cover w-full h-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/user/user-01.jpg';
-              }}
-            />
-          ) : userData.logo && userData.logo.startsWith('http') ? (
-            <img
-              src={userData.logo}
-              alt="User"
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/user/user-01.jpg';
-              }}
+              onError={e => { (e.target as HTMLImageElement).src = '/images/user/user-01.jpg'; }}
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <span className="text-gray-500 dark:text-gray-400 text-xs font-semibold">
-                {userData.organizer.username.charAt(0).toUpperCase()}
-              </span>
+            <div className="w-full h-full bg-brand-500/20 flex items-center justify-center">
+              <span className="text-brand-600 dark:text-brand-400 text-sm font-bold">{initials}</span>
             </div>
           )}
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">
-          {userData.organizer.username}
-        </span>
+        <span className="block mr-1 font-medium text-theme-sm">{displayName || "User"}</span>
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          width="18"
-          height="20"
-          viewBox="0 0 18 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          width="18" height="20" viewBox="0 0 18 20" fill="none"
         >
-          <path
-            d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <path d="M4.3125 8.65625L9 13.3437L13.6875 8.65625" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
       <Dropdown
         isOpen={isOpen}
-        onClose={closeDropdown}
+        onClose={() => setIsOpen(false)}
         className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
-        <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {userData.companyName}
+        {/* User info */}
+        <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-800">
+          <span className="overflow-hidden rounded-full h-10 w-10 shrink-0">
+            {resolvedAvatar ? (
+              <img src={resolvedAvatar} alt="" className="object-cover w-full h-full"
+                onError={e => { (e.target as HTMLImageElement).src = '/images/user/user-01.jpg'; }} />
+            ) : (
+              <div className="w-full h-full bg-brand-500/20 flex items-center justify-center">
+                <span className="text-brand-600 text-sm font-bold">{initials}</span>
+              </div>
+            )}
           </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {userData.organizer.email}
-          </span>
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-800 dark:text-white text-sm truncate">{displayName || "User"}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email || ""}</p>
+            {companyName && (
+              <p className="text-xs text-brand-500 truncate">{companyName}</p>
+            )}
+          </div>
         </div>
 
-        <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+        <ul className="flex flex-col gap-1 pt-3 pb-3 border-b border-gray-200 dark:border-gray-800">
           <li>
             <DropdownItem
-              onItemClick={closeDropdown}
+              onItemClick={() => setIsOpen(false)}
               tag="a"
               to="/profile"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
-              <svg
-                className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z"
-                  fill=""
-                />
+              <svg className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z" fill="" />
               </svg>
               Edit profile
             </DropdownItem>
           </li>
         </ul>
+
         <Link
           to="/signin"
           onClick={handleSignOut}

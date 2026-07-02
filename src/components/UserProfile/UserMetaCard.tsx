@@ -12,6 +12,7 @@ import {
   DeleteOutlined, 
   ExclamationCircleOutlined 
 } from "@ant-design/icons";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 
 interface BankAccount {
@@ -93,6 +94,9 @@ export default function UserMetaCard() {
     isDefault: false,
   });
   const [editingBankAccount, setEditingBankAccount] = useState<BankAccount | null>(null);
+
+  // Personal user info (name, email, Google photo)
+  const { user: currentUser, displayName, avatarUrl } = useCurrentUser();
 
 
   // Fetch bank templates
@@ -317,28 +321,49 @@ export default function UserMetaCard() {
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="relative flex flex-col items-center w-full gap-6 xl:flex-row">
-            <div className=" w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
-              <img
-                src={organizerDetails.logo ? `https://hikeapi.tripways.et/uploads/${organizerDetails.logo}` : "/images/user/owner.jpg"}
-                alt="user"
-              />
+            <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800 shrink-0">
+              {(() => {
+                // Priority: company logo → Google/personal picture → fallback
+                const logoSrc = organizerDetails.logo
+                  ? `https://hikeapi.tripways.et/uploads/${organizerDetails.logo}`
+                  : null;
+                const personalSrc = avatarUrl
+                  ? (avatarUrl.startsWith('http') ? avatarUrl : `https://hikeapi.tripways.et/uploads/${avatarUrl}`)
+                  : null;
+                const src = logoSrc || personalSrc;
+                return src ? (
+                  <img
+                    src={src}
+                    alt="user"
+                    className="w-full h-full object-cover"
+                    onError={e => { (e.target as HTMLImageElement).src = '/images/user/owner.jpg'; }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-brand-500/20 flex items-center justify-center">
+                    <span className="text-brand-600 dark:text-brand-400 text-2xl font-bold">
+                      {(displayName || organizerDetails.companyName || 'O').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                );
+              })()}
               {organizerDetails.status === "Approved" && (
                 <div className="absolute top-0 right-0 w-8 h-8 rounded-full flex items-center justify-center">
-                  <img
-                    src="verified.gif"
-                    alt="Verified"
-                    className="w-full h-full"
-                  />
+                  <img src="verified.gif" alt="Verified" className="w-full h-full" />
                 </div>
               )}
             </div>
             <div className="order-3 xl:order-2">
-              <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                {organizerDetails.companyName || "Trip Finder"}
+              <h4 className="mb-1 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
+                {displayName || organizerDetails.companyName || "Trip Organizer"}
               </h4>
+              {organizerDetails.companyName && displayName && (
+                <p className="text-sm font-medium text-brand-500 text-center xl:text-left mb-1">
+                  {organizerDetails.companyName}
+                </p>
+              )}
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {organizerDetails.organizer.email || "N/A"}
+                  {currentUser?.email || organizerDetails.organizer.email || "N/A"}
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
