@@ -159,7 +159,7 @@ export default function EventsTable() {
                                     Your organizer profile is not approved. Please complete all required fields in your profile to create events.
                                 </p>
                                 <p className="mb-3 text-sm">
-                                    Required fields: Company name, TIN number, Registration number, Company description, Logo, Phone number, Address, City, and Bank account details with firstname and lastname.
+                                    Required fields: Company name, Company description, Logo, Phone number, Address, and City.
                                 </p>
                                 <Link 
                                     to="/profile" 

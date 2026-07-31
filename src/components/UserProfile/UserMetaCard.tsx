@@ -398,9 +398,11 @@ export default function UserMetaCard() {
               <p className="mb-2">Please complete the following required fields to create events:</p>
               <ul className="list-disc list-inside space-y-1">
                 {profileCompletion.missingFields.includes('companyName') && <li>Company Name</li>}
-                {profileCompletion.missingFields.includes('bankAccount') && <li>At least one Bank Account</li>}
-                {profileCompletion.missingFields.includes('firstname') && <li>First Name (in bank account)</li>}
-                {profileCompletion.missingFields.includes('lastname') && <li>Last Name (in bank account)</li>}
+                {profileCompletion.missingFields.includes('companyDescription') && <li>Company Description</li>}
+                {profileCompletion.missingFields.includes('logo') && <li>Company Logo</li>}
+                {profileCompletion.missingFields.includes('phoneNumber') && <li>Phone Number</li>}
+                {profileCompletion.missingFields.includes('address') && <li>Address</li>}
+                {profileCompletion.missingFields.includes('city') && <li>City</li>}
               </ul>
             </div>
           }
@@ -685,12 +687,7 @@ export default function UserMetaCard() {
                           ...organizerDetails,
                           address: e.target.value,
                         })
-                      }
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <Label>Company Name <span className="text-red-500">*</span></Label>
+                    <Label>Company Name</Label>
                     <Input
                       type="text"
                       value={organizerDetails.companyName}
@@ -705,7 +702,7 @@ export default function UserMetaCard() {
                   </div>
 
                   <div className="col-span-2">
-                    <Label>Registration Number</Label>
+                    <Label>Registration Number (Optional)</Label>
                     <Input
                       type="text"
                       value={organizerDetails.RegistrationNumber}
@@ -719,7 +716,7 @@ export default function UserMetaCard() {
                   </div>
 
                   <div className="col-span-2">
-                    <Label>TIN Number</Label>
+                    <Label>TIN Number (Optional)</Label>
                     <Input
                       type="text"
                       value={organizerDetails.tinNo}
