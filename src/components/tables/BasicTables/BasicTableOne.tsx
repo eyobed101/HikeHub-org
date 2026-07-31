@@ -246,11 +246,6 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
   };
 
   const handleAddNewEvent = () => {
-    // Check if profile is approved before allowing event creation
-    if (organizerStatus && organizerStatus !== 'Approved') {
-      toast.error("Your profile is not approved. Please complete your profile before creating events.");
-      return;
-    }
 
     setFormData({
       _id: "",  // Clear the form data

@@ -51,19 +51,17 @@ export default function EventsTable() {
     useEffect(() => {
         const fetchOrganizerStatus = async () => {
             try {
-                const storedStatus = sessionStorage.getItem("organizerStatus");
-                if (storedStatus) {
-                    setOrganizerStatus(storedStatus);
-                } else {
-                    // Fetch from API if not in sessionStorage
-                    const response = await axiosInstance.get("auth/organizer/detail");
-                    if (response.data?.status) {
-                        setOrganizerStatus(response.data.status);
-                        sessionStorage.setItem("organizerStatus", response.data.status);
-                    }
+                const response = await axiosInstance.get("auth/organizer/detail");
+                if (response.data?.status) {
+                    setOrganizerStatus(response.data.status);
+                    sessionStorage.setItem("organizerStatus", response.data.status);
                 }
             } catch (error) {
                 console.error("Error fetching organizer status:", error);
+                const storedStatus = sessionStorage.getItem("organizerStatus");
+                if (storedStatus) {
+                    setOrganizerStatus(storedStatus);
+                }
             }
         };
         fetchOrganizerStatus();
@@ -149,32 +147,7 @@ export default function EventsTable() {
             />
             <PageBreadcrumb pageTitle="My Events" />
             <div className="space-y-6">
-                {/* Show alert if profile is not approved */}
-                {organizerStatus && organizerStatus !== 'Approved' && (
-                    <Alert
-                        message="Profile Incomplete"
-                        description={
-                            <div>
-                                <p className="mb-2">
-                                    Your organizer profile is not approved. Please complete all required fields in your profile to create events.
-                                </p>
-                                <p className="mb-3 text-sm">
-                                    Required fields: Company name, Company description, Logo, Phone number, Address, and City.
-                                </p>
-                                <Link 
-                                    to="/profile" 
-                                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                                >
-                                    Complete Your Profile →
-                                </Link>
-                            </div>
-                        }
-                        type="warning"
-                        showIcon
-                        closable
-                        className="mb-4"
-                    />
-                )}
+
                 <ComponentCard title="">
                     {error ? (
                         <Alert

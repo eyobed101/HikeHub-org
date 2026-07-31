@@ -873,3 +873,150 @@ span.flatpickr-weekday,
 .ant-table-wrapper .ant-input {
   @apply bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   GLOBAL ANT DESIGN & NATIVE DARK MODE OVERRIDES
+   ══════════════════════════════════════════════════════════════ */
+
+.dark html,
+.dark body {
+  color-scheme: dark;
+}
+
+.dark option {
+  background-color: #101828 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Ant Design Modals */
+.dark .ant-modal-content,
+.dark .ant-modal-header {
+  background-color: #101828 !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+.dark .ant-modal-title,
+.dark .ant-modal-confirm-title,
+.dark .ant-modal-confirm-content {
+  color: #f3f4f6 !important;
+}
+
+.dark .ant-modal-close {
+  color: #9ca3af !important;
+}
+
+.dark .ant-modal-close:hover {
+  color: #ffffff !important;
+}
+
+.dark .ant-modal-footer {
+  border-top: 1px solid #374151 !important;
+}
+
+/* Ant Design Select & Dropdown Menus */
+.dark .ant-select-dropdown,
+.dark .ant-dropdown-menu {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .ant-select-item,
+.dark .ant-dropdown-menu-item {
+  color: #d1d5db !important;
+}
+
+.dark .ant-select-item-option-active,
+.dark .ant-select-item-option-selected,
+.dark .ant-dropdown-menu-item:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-select-item-option-selected {
+  font-weight: 600;
+}
+
+/* Ant Design DatePicker & RangePicker Panels */
+.dark .ant-picker-dropdown,
+.dark .ant-picker-panel-container {
+  background-color: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .ant-picker-header,
+.dark .ant-picker-header button,
+.dark .ant-picker-content th,
+.dark .ant-picker-cell {
+  color: #d1d5db !important;
+}
+
+.dark .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner,
+.dark .ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner,
+.dark .ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background-color: #465fff !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-picker-cell-in-view.ant-picker-cell-in-range::before {
+  background-color: rgba(70, 95, 255, 0.2) !important;
+}
+
+/* Ant Design Popovers & Tooltips */
+.dark .ant-popover-inner {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #374151 !important;
+}
+
+.dark .ant-popover-arrow::after {
+  background-color: #1f2937 !important;
+}
+
+.dark .ant-tooltip-inner {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #374151 !important;
+}
+
+/* Ant Design Drawers & Cards */
+.dark .ant-drawer-content,
+.dark .ant-drawer-header {
+  background-color: #101828 !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+.dark .ant-drawer-title {
+  color: #f3f4f6 !important;
+}
+
+.dark .ant-card {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .ant-card-head {
+  border-bottom: 1px solid #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Ant Design Messages & Notifications */
+.dark .ant-message-notice-content,
+.dark .ant-notification-notice {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #374151 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .ant-notification-notice-message {
+  color: #ffffff !important;
+}
+
+.dark .ant-notification-notice-description {
+  color: #d1d5db !important;
+}

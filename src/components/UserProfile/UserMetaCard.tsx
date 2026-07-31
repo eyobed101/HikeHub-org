@@ -47,10 +47,13 @@ interface BankTemplate {
 interface ProfileCompletion {
   isComplete: boolean;
   requiredFields: {
-    companyName: string | null;
-    bankAccount: BankAccount | null;
-    firstname: string | null;
-    lastname: string | null;
+    companyName: boolean;
+    tripsOrganizedBefore: boolean;
+    companyDescription: boolean;
+    logo: boolean;
+    phoneNumber: boolean;
+    address: boolean;
+    city: boolean;
   };
   missingFields: string[];
   message: string;
@@ -127,7 +130,17 @@ export default function UserMetaCard() {
   const fetchProfileCompletion = useCallback(async () => {
     try {
       const response = await axiosInstance.get("bank-accounts/profile-completion") as any;
-      setProfileCompletion(response.data as ProfileCompletion);
+      if (response.data) {
+        const data = response.data;
+        const filteredMissing = (data.missingFields || []).filter(
+          (f: string) => f !== 'bankAccount' && f !== 'firstname' && f !== 'lastname'
+        );
+        setProfileCompletion({
+          ...data,
+          missingFields: filteredMissing,
+          isComplete: filteredMissing.length === 0,
+        });
+      }
     } catch (error) {
       console.error("Error fetching profile completion:", error);
     }
@@ -179,7 +192,15 @@ export default function UserMetaCard() {
 
         // Set profile completion
         if (completionResponse.data) {
-          setProfileCompletion(completionResponse.data as ProfileCompletion);
+          const compData = completionResponse.data;
+          const filteredMissing = (compData.missingFields || []).filter(
+            (f: string) => f !== 'bankAccount' && f !== 'firstname' && f !== 'lastname'
+          );
+          setProfileCompletion({
+            ...compData,
+            missingFields: filteredMissing,
+            isComplete: filteredMissing.length === 0,
+          });
         }
       } catch (error) {
         console.error("Error fetching organizer details:", error);
@@ -378,9 +399,17 @@ export default function UserMetaCard() {
                     <span className="text-orange-600 dark:text-orange-400 font-semibold">Incomplete</span>
                   )}
                 </p>
-                {profileCompletion && !profileCompletion.isComplete && profileCompletion.missingFields.length > 0 && (
+                {profileCompletion && !profileCompletion.isComplete && profileCompletion.missingFields.filter(f => f !== 'bankAccount' && f !== 'firstname' && f !== 'lastname').length > 0 && (
                   <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                    Missing: {profileCompletion.missingFields.join(", ")}
+                    Missing: {profileCompletion.missingFields.filter(f => f !== 'bankAccount' && f !== 'firstname' && f !== 'lastname').map(f => ({
+                      companyName: 'Company Name',
+                      companyDescription: 'Company Description',
+                      logo: 'Company Logo',
+                      phoneNumber: 'Phone Number',
+                      address: 'Address',
+                      city: 'City',
+                      tripsOrganizedBefore: 'Trips Organized Before',
+                    }[f] || f)).join(", ")}
                   </p>
                 )}
               </div>
@@ -403,6 +432,7 @@ export default function UserMetaCard() {
                 {profileCompletion.missingFields.includes('phoneNumber') && <li>Phone Number</li>}
                 {profileCompletion.missingFields.includes('address') && <li>Address</li>}
                 {profileCompletion.missingFields.includes('city') && <li>City</li>}
+                {profileCompletion.missingFields.includes('tripsOrganizedBefore') && <li>Trips Organized Before</li>}
               </ul>
             </div>
           }
@@ -687,6 +717,11 @@ export default function UserMetaCard() {
                           ...organizerDetails,
                           address: e.target.value,
                         })
+                      }
+                    />
+                  </div>
+
+                  <div className="col-span-2">
                     <Label>Company Name</Label>
                     <Input
                       type="text"

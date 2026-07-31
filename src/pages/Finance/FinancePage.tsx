@@ -106,7 +106,7 @@ export default function FinancePage() {
     ];
 
     return (
-        <>
+        <div className="w-full overflow-x-hidden">
             <PageMeta title="Finance | HikeHub" description="Manage your revenue and settlements" />
             <PageBreadcrumb pageTitle="Finance Manager" />
 
@@ -156,14 +156,17 @@ export default function FinancePage() {
                                             <strong>Confirm Receipt</strong> when you receive the bank transfer from Admin.
                                         </p>
                                     </div>
+                                    <div className="overflow-x-auto w-full">
                                     <Table
                                         dataSource={reports}
                                         columns={columns}
                                         rowKey="_id"
                                         loading={isLoading}
-                                        scroll={{ x: true }}
+                                        scroll={{ x: 'max-content' }}
                                         pagination={{ pageSize: 10 }}
+                                        style={{ width: '100%' }}
                                     />
+                                    </div>
                                 </div>
                             )
                         },
@@ -179,20 +182,23 @@ export default function FinancePage() {
                                             The Admin will mark these as <strong>Settled</strong> once you transfer the commission.
                                         </p>
                                     </div>
+                                    <div className="overflow-x-auto w-full">
                                     <Table
                                         dataSource={reports}
                                         columns={columns}
                                         rowKey="_id"
                                         loading={isLoading}
-                                        scroll={{ x: true }}
+                                        scroll={{ x: 'max-content' }}
                                         pagination={{ pageSize: 10 }}
+                                        style={{ width: '100%' }}
                                     />
+                                    </div>
                                 </div>
                             )
                         }
                     ]}
                 />
             </div>
-        </>
+        </div>
     );
 }
