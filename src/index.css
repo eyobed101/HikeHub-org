@@ -1020,3 +1020,24 @@ span.flatpickr-weekday,
 .dark .ant-notification-notice-description {
   color: #d1d5db !important;
 }
+
+/* Ant Design Table & Tabs overflow containment */
+.ant-table-wrapper {
+  max-width: 100% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+}
+
+.ant-table-container {
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.ant-tabs,
+.ant-tabs-content-holder,
+.ant-tabs-content,
+.ant-tabs-tabpane {
+  max-width: 100% !important;
+  min-width: 0 !important;
+}

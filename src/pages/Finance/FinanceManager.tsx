@@ -44,11 +44,11 @@ export default function FinanceManager() {
     ];
 
     return (
-        <>
+        <div className="w-full max-w-full min-w-0 overflow-x-hidden">
             <PageMeta title="Finance & Payments | HikeHub" description="All-in-one financial dashboard" />
             <PageBreadcrumb pageTitle="Finance & Payments" />
 
-            <div className="mb-6">
+            <div className="mb-6 w-full max-w-full min-w-0 overflow-x-hidden">
                 <Tabs
                     activeKey={activeKey}
                     onChange={setActiveKey}
@@ -58,6 +58,6 @@ export default function FinanceManager() {
                     className="finance-tabs"
                 />
             </div>
-        </>
+        </div>
     );
 }

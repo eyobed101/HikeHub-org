@@ -104,7 +104,7 @@ export default function RevenueOverview() {
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="w-full overflow-x-hidden space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card bordered={false} className="shadow-sm rounded-xl dark:bg-gray-800">
                     <Statistic
@@ -151,14 +151,17 @@ export default function RevenueOverview() {
                                             <strong>Confirm Receipt</strong> when you receive the bank transfer from Admin.
                                         </p>
                                     </div>
+                                    <div className="overflow-x-auto w-full">
                                     <Table
                                         dataSource={reports}
                                         columns={columns}
                                         rowKey="_id"
                                         loading={isLoading}
-                                        scroll={{ x: true }}
+                                        scroll={{ x: 'max-content' }}
                                         pagination={{ pageSize: 10 }}
+                                        style={{ width: '100%' }}
                                     />
+                                    </div>
                                 </div>
                             )
                         },
@@ -174,14 +177,17 @@ export default function RevenueOverview() {
                                             The Admin will mark these as <strong>Settled</strong> once you transfer the commission.
                                         </p>
                                     </div>
+                                    <div className="overflow-x-auto w-full">
                                     <Table
                                         dataSource={reports}
                                         columns={columns}
                                         rowKey="_id"
                                         loading={isLoading}
-                                        scroll={{ x: true }}
+                                        scroll={{ x: 'max-content' }}
                                         pagination={{ pageSize: 10 }}
+                                        style={{ width: '100%' }}
                                     />
+                                    </div>
                                 </div>
                             )
                         }

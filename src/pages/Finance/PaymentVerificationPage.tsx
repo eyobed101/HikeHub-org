@@ -157,7 +157,7 @@ export default function PaymentVerificationPage() {
     ];
 
     return (
-        <>
+        <div className="w-full overflow-x-hidden">
             <PageMeta title="HikeHub | Payment Verifier" description="Verify manual bank payments" />
             <PageBreadcrumb pageTitle="Payment Verifier" />
 
@@ -186,14 +186,17 @@ export default function PaymentVerificationPage() {
                     </p>
                 </div>
 
+                <div className="overflow-x-auto w-full">
                 <Table
                     dataSource={filteredPayments}
                     columns={columns}
                     rowKey="_id"
                     loading={isLoading}
-                    scroll={{ x: true }}
+                    scroll={{ x: 'max-content' }}
                     pagination={{ pageSize: 10, showTotal: (total) => `Total ${total} items` }}
+                    style={{ width: '100%' }}
                 />
+                </div>
             </div>
 
             <Modal
@@ -217,6 +220,6 @@ export default function PaymentVerificationPage() {
                     onChange={e => setRejectionReason(e.target.value)}
                 />
             </Modal>
-        </>
+        </div>
     );
 }

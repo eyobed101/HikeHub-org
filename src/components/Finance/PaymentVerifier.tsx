@@ -155,7 +155,7 @@ export default function PaymentVerifier() {
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="w-full overflow-x-hidden space-y-6">
             <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6 shadow-theme-xs">
                 <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
@@ -181,14 +181,17 @@ export default function PaymentVerifier() {
                     </p>
                 </div>
 
+                <div className="overflow-x-auto w-full">
                 <Table
                     dataSource={filteredPayments}
                     columns={columns}
                     rowKey="_id"
                     loading={isLoading}
-                    scroll={{ x: true }}
+                    scroll={{ x: 'max-content' }}
                     pagination={{ pageSize: 10, showTotal: (total) => `Total ${total} items` }}
+                    style={{ width: '100%' }}
                 />
+                </div>
             </div>
 
             <Modal
