@@ -271,14 +271,24 @@ export default function SignInForm() {
               </div>
             </form>
 
-            <div className="mt-5">
+            <div className="mt-5 space-y-2">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                 Don&apos;t have an account? {""}
                 <Link
                   to="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400 font-medium"
                 >
                   Sign Up
+                </Link>
+              </p>
+              <p className="text-xs font-normal text-center text-gray-500 dark:text-gray-400 sm:text-start">
+                By signing in, you agree to our{" "}
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  className="text-brand-500 hover:underline dark:text-brand-400"
+                >
+                  Terms and Conditions
                 </Link>
               </p>
             </div>

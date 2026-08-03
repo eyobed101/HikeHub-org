@@ -26,6 +26,10 @@ export default function SignUpForm() {
   });
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!isChecked) {
+      toast.error("Please agree to the Terms and Conditions before signing up.");
+      return;
+    }
     if (!credentialResponse.credential) {
       toast.error("No credential returned from Google. Please try again.");
       return;
@@ -34,6 +38,8 @@ export default function SignUpForm() {
       const response = await axiosInstance.post("auth/google", {
         credential: credentialResponse.credential,
         intent: "organizer",
+        termsAccepted: true,
+        termsVersion: "2.1",
       });
       if (response.status === 200) {
         const { role } = response.data;
@@ -99,6 +105,8 @@ export default function SignUpForm() {
         email: formData.email,
         password: formData.password,
         phone_number: formData.phone_number,
+        termsAccepted: true,
+        termsVersion: "2.1",
       };
 
       const response = await axiosInstance.post(endpoint, requestData);
@@ -246,14 +254,14 @@ export default function SignUpForm() {
                     onChange={setIsChecked}
                   />
                   <p className="inline-block font-normal text-gray-500 dark:text-gray-400">
-                    By creating an account means you agree to the{" "}
-                    <span className="text-gray-800 dark:text-white/90">
-                      Terms and Conditions,
-                    </span>{" "}
-                    and our{" "}
-                    <span className="text-gray-800 dark:text-white">
-                      Privacy Policy
-                    </span>
+                    By creating an account means you agree to our{" "}
+                    <Link
+                      to="/terms"
+                      target="_blank"
+                      className="text-brand-500 hover:underline dark:text-brand-400 font-medium"
+                    >
+                      Terms and Conditions
+                    </Link>
                   </p>
                 </div>
                 {/* <!-- Button --> */}

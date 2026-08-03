@@ -35,6 +35,7 @@ import RoleBasedRoute from "./components/common/RoleBasedRoute";
 import ChatPage from "./pages/ChatPage/ChatPage";
 import FinanceManager from "./pages/Finance/FinanceManager";
 import SuperAdminFinance from "./pages/Superadmin/Finance/SuperAdminFinance";
+import TermsAndConditions from "./pages/OtherPage/TermsAndConditions";
 
 const protectedRoutes = [
   // Role-based dashboard routes
@@ -47,7 +48,6 @@ const protectedRoutes = [
   { path: "/superadmin/payments", element: <PaymentAnalytics />, roles: ['Superadmin'] },
   { path: "/superadmin/analytics", element: <PlatformAnalytics />, roles: ['Superadmin'] },
   { path: "/superadmin/bank-templates", element: <BankTemplates />, roles: ['Superadmin'] },
-  // { path: "/superadmin/bank-templates", element: <BankTemplates />, roles: ['Superadmin'] }, // Removed duplicate
 
   { path: "/superadmin/advertisements", element: <AdvertisementManagement />, roles: ['Superadmin'] },
   { path: "/superadmin/finance", element: <SuperAdminFinance />, roles: ['Superadmin'] },
@@ -75,6 +75,22 @@ const protectedRoutes = [
   { path: "/bar-chart", element: <BarChart />, roles: ['EventOrganizer', 'Superadmin'] },
 ];
 
+const PublicOrProtectedTerms = () => {
+  const token = sessionStorage.getItem("accessToken");
+  if (token) {
+    return (
+      <AppLayout>
+        <TermsAndConditions />
+      </AppLayout>
+    );
+  }
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8">
+      <TermsAndConditions />
+    </div>
+  );
+};
+
 export default function App() {
   return (
     <Router>
@@ -83,6 +99,7 @@ export default function App() {
       <Routes>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/terms" element={<PublicOrProtectedTerms />} />
 
         <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
           {protectedRoutes.map(({ path, element, roles }) => (
