@@ -1041,3 +1041,54 @@ span.flatpickr-weekday,
   max-width: 100% !important;
   min-width: 0 !important;
 }
+
+/* Ant Design Form Labels, Typography & Inputs */
+.dark .ant-form-item-label > label {
+  color: #e5e7eb !important;
+}
+
+.dark .ant-statistic-title {
+  color: #9ca3af !important;
+}
+
+.dark .ant-statistic-content,
+.dark .ant-statistic-content-value {
+  color: #f9fafb !important;
+}
+
+.dark .ant-tabs-tab {
+  color: #9ca3af !important;
+}
+
+.dark .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn,
+.dark .ant-tabs-tab:hover {
+  color: #7592ff !important;
+}
+
+.dark .ant-input,
+.dark .ant-input-affix-wrapper,
+.dark .ant-input-number,
+.dark .ant-input-search .ant-input {
+  background-color: #101828 !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+.dark .ant-input::placeholder,
+.dark .ant-input-affix-wrapper input::placeholder {
+  color: #6b7280 !important;
+}
+
+.dark .ant-popconfirm-message-title,
+.dark .ant-popconfirm-description {
+  color: #f3f4f6 !important;
+}
+
+.dark .ant-typography {
+  color: #f3f4f6 !important;
+}
+
+.dark select option {
+  background-color: #101828 !important;
+  color: #f3f4f6 !important;
+}

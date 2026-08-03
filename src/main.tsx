@@ -18,7 +18,27 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { ConfigProvider, theme as antdTheme } from "antd";
+import { useTheme } from "./context/ThemeContext.tsx";
+
 const queryClient = new QueryClient();
+
+function AntdConfigProvider({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  return (
+    <ConfigProvider
+      theme={{
+        algorithm: theme === "dark" ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        token: {
+          fontFamily: "Outfit, sans-serif",
+          colorPrimary: "#465fff",
+        },
+      }}
+    >
+      {children}
+    </ConfigProvider>
+  );
+}
 
 createRoot(document.getElementById("root")!).render(
   <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -37,11 +57,13 @@ createRoot(document.getElementById("root")!).render(
           style={{ zIndex: 9999 }} />
         <StrictMode>
           <ThemeProvider>
-            <AppWrapper>
-              <AuthProvider>
-                <App />
-              </AuthProvider>
-            </AppWrapper>
+            <AntdConfigProvider>
+              <AppWrapper>
+                <AuthProvider>
+                  <App />
+                </AuthProvider>
+              </AppWrapper>
+            </AntdConfigProvider>
           </ThemeProvider>
         </StrictMode>
       </QueryClientProvider>
