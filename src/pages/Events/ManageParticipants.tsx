@@ -361,7 +361,7 @@ export default function ManageParticipants() {
               <div>
                 <span className="text-gray-500 dark:text-gray-400">Amount:</span>
                 <p className="font-semibold text-gray-800 dark:text-white">
-                  ${payment.amount || payment.event?.price || 0}
+                  {payment.amount || payment.event?.price || 0} ETB
                 </p>
               </div>
               <div>
@@ -434,7 +434,7 @@ export default function ManageParticipants() {
                 <div>
                   <span className="text-gray-500 dark:text-gray-400">Price:</span>
                   <p className="font-semibold text-gray-800 dark:text-white">
-                    ${selectedEvent.price}
+                    {selectedEvent.price} ETB
                   </p>
                 </div>
                 <div>
@@ -667,7 +667,7 @@ export default function ManageParticipants() {
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Amount</p>
                 <p className="font-semibold text-lg text-gray-800 dark:text-white">
-                  ${paymentDetailModal.payment.amount || paymentDetailModal.payment.event?.price || 0}
+                  {paymentDetailModal.payment.amount || paymentDetailModal.payment.event?.price || 0} ETB
                 </p>
               </div>
               <div>

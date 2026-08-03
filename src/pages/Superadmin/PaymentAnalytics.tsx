@@ -200,11 +200,11 @@ export default function PaymentAnalytics() {
     
     const verifiedPayments = analytics.data.filter(p => p.status === 'verified');
     const ranges = [
-      { label: '$0-50', min: 0, max: 50 },
-      { label: '$51-100', min: 51, max: 100 },
-      { label: '$101-200', min: 101, max: 200 },
-      { label: '$201-500', min: 201, max: 500 },
-      { label: '$500+', min: 501, max: Infinity },
+      { label: 'ETB 0-50', min: 0, max: 50 },
+      { label: 'ETB 51-100', min: 51, max: 100 },
+      { label: 'ETB 101-200', min: 101, max: 200 },
+      { label: 'ETB 201-500', min: 201, max: 500 },
+      { label: 'ETB 500+', min: 501, max: Infinity },
     ];
 
     const counts = ranges.map(range => 
@@ -264,13 +264,13 @@ export default function PaymentAnalytics() {
     },
     yaxis: {
       labels: {
-        formatter: (val: number) => `$${val.toFixed(0)}`,
+        formatter: (val: number) => `ETB ${val.toFixed(0)}`,
       },
     },
     colors: ['#10b981'],
     tooltip: {
       y: {
-        formatter: (val: number) => `$${val.toFixed(2)}`,
+        formatter: (val: number) => `ETB ${val.toFixed(2)}`,
       },
     },
     grid: {
@@ -312,13 +312,11 @@ export default function PaymentAnalytics() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    if (amount >= 100000) return '$100,000+';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    if (amount >= 100000) return 'ETB 100,000+';
+    return `ETB ${new Intl.NumberFormat('en-ET', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(amount)}`;
   };
 
   // Format date
@@ -449,7 +447,7 @@ export default function PaymentAnalytics() {
                 <div className="min-w-0 flex-1">
                   <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
                   <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 mt-2 truncate">
-                    {analytics?.statistics?.totalRevenue ? formatCurrency(analytics.statistics.totalRevenue) : '$0.00'}
+                    {analytics?.statistics?.totalRevenue ? formatCurrency(analytics.statistics.totalRevenue) : 'ETB 0.00'}
                   </p>
                 </div>
                 <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0 ml-2">

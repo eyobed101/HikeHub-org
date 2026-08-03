@@ -167,13 +167,11 @@ export default function RevenueReports() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    if (amount >= 100000) return '$100,000+';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    if (amount >= 100000) return 'ETB 100,000+';
+    return `ETB ${new Intl.NumberFormat('en-ET', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(amount)}`;
   };
 
   // Format date
@@ -247,7 +245,7 @@ export default function RevenueReports() {
     },
     yaxis: {
       labels: {
-        formatter: (val: number) => `$${val.toFixed(0)}`,
+        formatter: (val: number) => `ETB ${val.toFixed(0)}`,
       },
     },
     colors: ['#10b981', '#3b82f6', '#f59e0b'],
@@ -256,7 +254,7 @@ export default function RevenueReports() {
     },
     tooltip: {
       y: {
-        formatter: (val: number) => `$${val.toFixed(2)}`,
+        formatter: (val: number) => `ETB ${val.toFixed(2)}`,
       },
     },
     series: [
@@ -286,13 +284,13 @@ export default function RevenueReports() {
     },
     yaxis: {
       labels: {
-        formatter: (val: number) => `$${val.toFixed(0)}`,
+        formatter: (val: number) => `ETB ${val.toFixed(0)}`,
       },
     },
     colors: ['#3b82f6'],
     tooltip: {
       y: {
-        formatter: (val: number) => `$${val.toFixed(2)}`,
+        formatter: (val: number) => `ETB ${val.toFixed(2)}`,
       },
     },
     plotOptions: {

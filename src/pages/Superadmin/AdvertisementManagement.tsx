@@ -136,10 +136,10 @@ export default function AdvertisementManagement() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return `ETB ${new Intl.NumberFormat('en-ET', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount)}`;
   };
 
   // Get status badge

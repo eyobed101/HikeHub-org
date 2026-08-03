@@ -107,13 +107,11 @@ export default function PlatformAnalytics() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    if (amount >= 100000) return '$100,000+';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    if (amount >= 100000) return 'ETB 100,000+';
+    return `ETB ${new Intl.NumberFormat('en-ET', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(amount)}`;
   };
 
   // Prepare chart data
@@ -308,7 +306,7 @@ export default function PlatformAnalytics() {
     },
     yaxis: {
       labels: {
-        formatter: (val: number) => `$${val.toFixed(0)}`,
+        formatter: (val: number) => `ETB ${val.toFixed(0)}`,
       },
     },
     colors: ['#f59e0b'],
