@@ -356,11 +356,8 @@ export default function EventTable({ tableData, organizerStatus }: { tableData: 
 
       // Handle profile not approved error
       if (error.response?.data?.businessErrorCode === 'PROFILE_NOT_APPROVED') {
-        toast.error(error.response.data.message || "Your profile is not approved. Please complete your profile.");
-        // Update organizer status in sessionStorage
-        if (error.response.data.organizerStatus) {
-          sessionStorage.setItem("organizerStatus", error.response.data.organizerStatus);
-        }
+        // Show warning but do not block — organizers can still create events
+        toast.warn("Your profile is incomplete. Please complete your profile for full access.");
       } else {
         toast.error(error.response?.data?.message || "An error occurred while creating the event. Please try again.");
       }

@@ -36,22 +36,22 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'https://hikeapi.tripways.et',
-        // target: 'http://localhost:3030',
+        // target: 'https://hikeapi.tripways.et',
+        target: 'http://localhost:3030',
         changeOrigin: true,
         secure: false,
         ws: true, // Enable WebSocket proxying for Socket.IO
       },
       '/socket.io': {
-        target: 'https://hikeapi.tripways.et',
-        // target: 'http://localhost:3030',
+        // target: 'https://hikeapi.tripways.et',
+        target: 'http://localhost:3030',
         changeOrigin: true,
         secure: false,
         ws: true, // Enable WebSocket proxying for Socket.IO
       },
       '/uploads': {
-        target: 'https://hikeapi.tripways.et',
-        // target: 'http://localhost:3030',
+        // target: 'https://hikeapi.tripways.et',
+        target: 'http://localhost:3030',
         changeOrigin: true,
         secure: false,
       }
