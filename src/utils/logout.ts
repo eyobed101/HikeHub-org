@@ -13,20 +13,23 @@ export const performLogout = async (): Promise<void> => {
   // Set logout flag in axiosInstance
   resetRefreshFailed(true); // This sets isLoggingOut = true
 
+  // Clear local auth state immediately to ensure UI is updated right away
+  store.dispatch(logout());
+  sessionStorage.removeItem('accessToken');
+  sessionStorage.removeItem('userRole');
+  sessionStorage.removeItem('organizerStatus');
+  localStorage.removeItem('refreshToken');
+
   try {
-    // Use axios directly instead of axiosInstance to avoid interceptors
-    // This prevents loops where the interceptor tries to refresh/logout
+    // Use axios directly with a short timeout to prevent network hangs
     await axios.post('/api/v1.0/auth/logout', {}, {
-      withCredentials: true
+      withCredentials: true,
+      timeout: 3000
     });
   } catch (error) {
-    // Even if logout fails, continue with local cleanup
-    console.error('Logout error:', error);
+    // Even if logout fails or times out, local cleanup is already done
+    console.error('Logout request notice:', error);
   } finally {
-    // Clear local storage regardless of backend response
-    store.dispatch(logout());
-    sessionStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     // Reset flags after a short delay to allow navigation
     setTimeout(() => {
       resetRefreshFailed();

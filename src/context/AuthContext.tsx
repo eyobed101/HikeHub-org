@@ -30,60 +30,69 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Initialize auth state on app start
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = sessionStorage.getItem("accessToken");
-      
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      // Check if token is expired or about to expire
       try {
-        const { jwtDecode } = await import('jwt-decode');
-        const decoded = jwtDecode<{ exp?: number }>(token);
+        let token = sessionStorage.getItem("accessToken");
         
-        if (decoded.exp) {
-          const expirationTime = decoded.exp * 1000;
-          const bufferTime = 5 * 60 * 1000; // 5 minutes
-          
-          // Only refresh if token expires soon
-          if (expirationTime - Date.now() < bufferTime) {
-            try {
-              // Use axios directly instead of axiosInstance to avoid interceptors
-              // This prevents loops where the interceptor tries to refresh before refresh
-              const axios = (await import('axios')).default;
-              const response = await axios.get('/api/v1.0/auth/refresh', {
-                withCredentials: true
-              });
-              if (response.data?.token) {
-                sessionStorage.setItem("accessToken", response.data.token);
+        // If there's no token in sessionStorage, attempt to refresh via HttpOnly cookie
+        if (!token) {
+          try {
+            const axios = (await import('axios')).default;
+            const response = await axios.get('/api/v1.0/auth/refresh', {
+              withCredentials: true,
+              timeout: 4000
+            });
+            if (response.data?.token) {
+              token = response.data.token;
+              sessionStorage.setItem("accessToken", token);
+              if (response.data.role) {
+                sessionStorage.setItem("userRole", response.data.role);
               }
-            } catch (error) {
-              // Refresh failed, clear token but don't call logout if already logging out
-              sessionStorage.removeItem("accessToken");
-              // Only call logout if not already in progress (prevent loops)
-              try {
-                await performLogout();
-              } catch (logoutError) {
-                // Ignore logout errors to prevent loops
-                console.error('Logout error during auth init:', logoutError);
+            } else {
+              await performLogout();
+            }
+          } catch {
+            await performLogout();
+          }
+        } else {
+          // Check if token in sessionStorage is expired or about to expire (< 5 mins)
+          try {
+            const { jwtDecode } = await import('jwt-decode');
+            const decoded = jwtDecode<{ exp?: number }>(token);
+            
+            if (decoded.exp) {
+              const expirationTime = decoded.exp * 1000;
+              const bufferTime = 5 * 60 * 1000; // 5 minutes
+              
+              if (expirationTime - Date.now() < bufferTime) {
+                try {
+                  const axios = (await import('axios')).default;
+                  const response = await axios.get('/api/v1.0/auth/refresh', {
+                    withCredentials: true,
+                    timeout: 4000
+                  });
+                  if (response.data?.token) {
+                    sessionStorage.setItem("accessToken", response.data.token);
+                    if (response.data.role) {
+                      sessionStorage.setItem("userRole", response.data.role);
+                    }
+                  } else {
+                    await performLogout();
+                  }
+                } catch {
+                  await performLogout();
+                }
               }
             }
+          } catch {
+            await performLogout();
           }
         }
       } catch (error) {
-        // Token is invalid, clear it but don't call logout if already logging out
-        sessionStorage.removeItem("accessToken");
-        // Only call logout if not already in progress (prevent loops)
-        try {
-          await performLogout();
-        } catch (logoutError) {
-          // Ignore logout errors to prevent loops
-          console.error('Logout error during auth init:', logoutError);
-        }
+        console.error('Error during auth initialization:', error);
+        await performLogout();
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     initializeAuth();
@@ -97,11 +106,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     await performLogout();
   };
 
-  console.log('AuthProvider rendering with isAuthenticated:', isAuthenticated);
-
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout, loading }}>
-      {!loading && children}
+      {loading ? (
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+          <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

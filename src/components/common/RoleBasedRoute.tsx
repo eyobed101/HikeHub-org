@@ -1,6 +1,7 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate } from 'react-router';
 import { getUserRole } from '../../utils/userRole';
+import { performLogout } from '../../utils/logout';
 
 interface RoleBasedRouteProps {
     roles: string[];
@@ -8,8 +9,14 @@ interface RoleBasedRouteProps {
 }
 
 const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({ roles, children }) => {
-    const userRole = getUserRole();
+    const userRole = getUserRole() || sessionStorage.getItem('userRole');
     const token = sessionStorage.getItem('accessToken');
+
+    useEffect(() => {
+        if (!token) {
+            performLogout();
+        }
+    }, [token]);
 
     // If no user is logged in (no token), redirect to signin
     if (!token) {
